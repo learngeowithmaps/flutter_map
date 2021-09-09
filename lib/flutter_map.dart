@@ -31,6 +31,7 @@ export 'package:flutter_map/src/layer/tile_builder/tile_builder.dart';
 export 'package:flutter_map/src/layer/tile_layer.dart';
 export 'package:flutter_map/src/layer/tile_provider/tile_provider.dart';
 export 'package:flutter_map/src/plugins/plugin.dart';
+export 'package:flutter_map/src/gestures/gesture_overrider.dart';
 
 /// Renders a map composed of a list of layers powered by [LayerOptions].
 ///
