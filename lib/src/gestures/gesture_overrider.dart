@@ -64,7 +64,7 @@ class _MapGestureOverriderState extends State<MapGestureOverrider> {
 
   @override
   void dispose() {
-    MapGestureDetector._of(context)._overrides.remove(this);
+    MapGestureDetector._mayBeof(context)?._overrides.remove(this);
     super.dispose();
   }
 
@@ -110,6 +110,11 @@ class MapGestureDetector extends StatefulWidget {
         '_MapGestureOverrider not found for the context',
       );
     }
+    return state;
+  }
+
+  static _MapGestureDetectorState? _mayBeof(BuildContext context) {
+    final state = context.findAncestorStateOfType<_MapGestureDetectorState>();
     return state;
   }
 
