@@ -113,7 +113,7 @@ enum AnchorAlign {
   center,
 }
 
-class Marker extends MapElement<WidgetBuilder> {
+class Marker extends MapElement<WidgetBuilder, Marker> {
   final LatLng point;
   final double width;
   final double height;
@@ -158,7 +158,7 @@ class Marker extends MapElement<WidgetBuilder> {
           id: id ?? DateTime.now(),
           builder: builder,
         );
-
+  @override
   Marker copyWithNewPoint(LatLng point) {
     return Marker(
       point: point,
@@ -298,6 +298,7 @@ class _MarkerLayerState extends State<MarkerLayer> {
         }
         lastZoom = widget.map.zoom;
         return Listener(
+          behavior: HitTestBehavior.translucent,
           onPointerMove: widget.markerLayerOptions.handlingTouch
               ? (details) {
                   if (_draggingMarker != null) {

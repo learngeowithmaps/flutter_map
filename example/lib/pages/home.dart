@@ -11,8 +11,8 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     var polygons = <Polygon>[
       Polygon(
-        id: "1",
-        points: [LatLng(51.5, -0.09), LatLng(54.5, -1.09), LatLng(56.5, -3.09)],
+        id: "6",
+        points: [LatLng(51.5, -0.09), LatLng(56.5, -2.09), LatLng(59.5, -5.09)],
         builder: (
           context,
           points,
@@ -71,12 +71,12 @@ class HomePage extends StatelessWidget {
                     // NetworkTileProvider or CachedNetworkTileProvider
                     tileProvider: NonCachingNetworkTileProvider(),
                   ),
+                  PolygonLayerOptions(
+                    polygons: polygons,
+                  ),
                   MarkerLayerOptions(
                     markers: markers,
                   ),
-                  PolygonLayerOptions(
-                    polygons: polygons,
-                  )
                 ],
               ),
             ),

@@ -1,12 +1,16 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
+import '../helpers/helpers.dart';
 
-class PolygonLayerOptions extends LayerOptions {
+class PolygonLayerOptions extends LayerOptions<Polygon> {
   final List<Polygon> polygons;
   final bool polygonCulling;
 
@@ -16,7 +20,11 @@ class PolygonLayerOptions extends LayerOptions {
     this.polygons = const [],
     this.polygonCulling = false,
     Stream<Null>? rebuild,
-  }) : super(key: key, rebuild: rebuild) {
+  }) : super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: null,
+        ) {
     if (polygonCulling) {
       for (var polygon in polygons) {
         polygon.boundingBox = LatLngBounds.fromPoints(polygon.points);
@@ -25,29 +33,34 @@ class PolygonLayerOptions extends LayerOptions {
   }
 }
 
-class Polygon {
+class Polygon extends MapElement<PolygonBuilder, Polygon> {
   final List<LatLng> points;
   final List<Offset> offsets = [];
   final List<List<LatLng>>? holePointsList;
   final List<List<Offset>>? holeOffsetsList;
-  final Color color;
-  final double borderStrokeWidth;
-  final Color borderColor;
-  final bool disableHolesBorder;
-  final bool isDotted;
   late final LatLngBounds boundingBox;
 
   Polygon({
+    dynamic id,
+    required PolygonBuilder builder,
     required this.points,
     this.holePointsList,
-    this.color = const Color(0xFF00FF00),
-    this.borderStrokeWidth = 0.0,
-    this.borderColor = const Color(0xFFFFFF00),
-    this.disableHolesBorder = false,
-    this.isDotted = false,
-  }) : holeOffsetsList = null == holePointsList || holePointsList.isEmpty
+  })  : holeOffsetsList = null == holePointsList || holePointsList.isEmpty
             ? null
-            : List.generate(holePointsList.length, (_) => []);
+            : List.generate(holePointsList.length, (_) => []),
+        super(
+          builder: builder,
+          id: id,
+        );
+  @override
+  Polygon copyWithNewPoint(LatLng point) {
+    return Polygon(
+      points: points,
+      holePointsList: holePointsList,
+      id: id,
+      builder: builder,
+    );
+  }
 }
 
 class PolygonLayerWidget extends StatelessWidget {
@@ -61,7 +74,7 @@ class PolygonLayerWidget extends StatelessWidget {
   }
 }
 
-class PolygonLayer extends StatelessWidget {
+class PolygonLayer extends StatefulWidget {
   final PolygonLayerOptions polygonOpts;
   final MapState map;
   final Stream<Null>? stream;
@@ -69,6 +82,12 @@ class PolygonLayer extends StatelessWidget {
   PolygonLayer(this.polygonOpts, this.map, this.stream)
       : super(key: polygonOpts.key);
 
+  @override
+  State<PolygonLayer> createState() => _PolygonLayerState();
+}
+
+class _PolygonLayerState extends State<PolygonLayer> {
+  Polygon? _draggingPolygon;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -81,11 +100,11 @@ class PolygonLayer extends StatelessWidget {
 
   Widget _build(BuildContext context, Size size) {
     return StreamBuilder(
-      stream: stream, // a Stream<void> or null
+      stream: widget.stream, // a Stream<void> or null
       builder: (BuildContext context, _) {
         var polygons = <Widget>[];
 
-        for (var polygon in polygonOpts.polygons) {
+        for (var polygon in widget.polygonOpts.polygons) {
           polygon.offsets.clear();
 
           if (null != polygon.holeOffsetsList) {
@@ -94,8 +113,8 @@ class PolygonLayer extends StatelessWidget {
             }
           }
 
-          if (polygonOpts.polygonCulling &&
-              !polygon.boundingBox.isOverlapping(map.bounds)) {
+          if (widget.polygonOpts.polygonCulling &&
+              !polygon.boundingBox.isOverlapping(widget.map.bounds)) {
             // skip this polygon as it's offscreen
             continue;
           }
@@ -112,16 +131,59 @@ class PolygonLayer extends StatelessWidget {
           }
 
           polygons.add(
-            CustomPaint(
-              painter: PolygonPainter(polygon),
+            SizedBox.fromSize(
               size: size,
+              child: GestureDetector(
+                child: polygon.builder(
+                  context,
+                  polygon.points,
+                  polygon.holePointsList,
+                  polygon.holeOffsetsList,
+                ),
+                onTapDown: (deets) {
+                  setState(() {
+                    widget.polygonOpts.handlingTouch = true;
+                    _draggingPolygon = polygon;
+                  });
+                },
+              ),
             ),
           );
         }
 
-        return Container(
-          child: Stack(
-            children: polygons,
+        return Listener(
+          onPointerMove: widget.polygonOpts.handlingTouch
+              ? (details) {
+                  if (_draggingPolygon != null) {
+                    final location = widget.map.offsetToLatLng(
+                      details.localPosition,
+                      context.size!.width,
+                      context.size!.height,
+                    );
+
+                    widget.polygonOpts.polygons.remove(_draggingPolygon!);
+                    _draggingPolygon =
+                        _draggingPolygon!.copyWithNewPoint(location);
+                    widget.polygonOpts.polygons.add(_draggingPolygon!);
+
+                    widget.polygonOpts.onLayerElementDrag?.call(
+                      _draggingPolygon!,
+                      details,
+                    );
+                    setState(() {});
+                  }
+                }
+              : null,
+          onPointerUp: (_) {
+            setState(() {
+              widget.polygonOpts.handlingTouch = false;
+              _draggingPolygon = null;
+            });
+          },
+          child: Container(
+            child: Stack(
+              children: polygons,
+            ),
           ),
         );
       },
@@ -132,9 +194,10 @@ class PolygonLayer extends StatelessWidget {
     for (var i = 0, len = points.length; i < len; ++i) {
       var point = points[i];
 
-      var pos = map.project(point);
-      pos = pos.multiplyBy(map.getZoomScale(map.zoom, map.zoom)) -
-          map.getPixelOrigin();
+      var pos = widget.map.project(point);
+      pos = pos.multiplyBy(
+              widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
+          widget.map.getPixelOrigin();
       offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
       if (i > 0) {
         offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
@@ -143,14 +206,78 @@ class PolygonLayer extends StatelessWidget {
   }
 }
 
-class PolygonPainter extends CustomPainter {
-  final Polygon polygonOpt;
+typedef PolygonBuilder = Widget Function(
+  BuildContext context,
+  List<LatLng> points,
+  List<List<LatLng>>? holePointsList,
+  List<List<Offset>>? holeOffsetsList,
+);
 
-  PolygonPainter(this.polygonOpt);
+class PolygonWidget extends StatefulWidget {
+  final Color borderColor, color;
+  final double borderStrokeWidth;
+  final bool dottedBorder, disableHolesBorder;
+  final List<LatLng> points;
+  final List<Offset> offsets = [];
+  final List<List<LatLng>>? holePointsList;
+  final List<List<Offset>>? holeOffsetsList;
+  PolygonWidget({
+    Key? key,
+    required this.points,
+    this.holePointsList,
+    this.holeOffsetsList,
+    this.borderColor = Colors.black,
+    this.color = Colors.blue,
+    this.borderStrokeWidth = 1.0,
+    this.dottedBorder = false,
+    this.disableHolesBorder = true,
+  }) : super(key: key);
+
+  @override
+  State<PolygonWidget> createState() => _PolygonWidgetState();
+}
+
+class _PolygonWidgetState extends State<PolygonWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: PolygonPainter(
+        borderColor: widget.borderColor,
+        color: widget.color,
+        borderStrokeWidth: widget.borderStrokeWidth,
+        dottedBorder: widget.dottedBorder,
+        holeOffsetsList: widget.holeOffsetsList,
+        holePointsList: widget.holePointsList,
+        disableHolesBorder: widget.disableHolesBorder,
+        points: widget.points,
+      ),
+    );
+  }
+}
+
+class PolygonPainter extends CustomPainter {
+  final Color borderColor, color;
+  final double borderStrokeWidth;
+  final bool dottedBorder, disableHolesBorder;
+  final List<LatLng> points;
+  final List<Offset> offsets = [];
+  final List<List<LatLng>>? holePointsList;
+  final List<List<Offset>>? holeOffsetsList;
+
+  PolygonPainter({
+    required this.borderColor,
+    required this.color,
+    required this.borderStrokeWidth,
+    required this.dottedBorder,
+    required this.disableHolesBorder,
+    required this.points,
+    required this.holePointsList,
+    required this.holeOffsetsList,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (polygonOpt.offsets.isEmpty) {
+    if (offsets.isEmpty) {
       return;
     }
     final rect = Offset.zero & size;
@@ -158,31 +285,28 @@ class PolygonPainter extends CustomPainter {
   }
 
   void _paintBorder(Canvas canvas) {
-    if (polygonOpt.borderStrokeWidth > 0.0) {
-      var borderRadius = (polygonOpt.borderStrokeWidth / 2);
+    if (borderStrokeWidth > 0.0) {
+      var borderRadius = (borderStrokeWidth / 2);
 
       final borderPaint = Paint()
-        ..color = polygonOpt.borderColor
-        ..strokeWidth = polygonOpt.borderStrokeWidth;
+        ..color = borderColor
+        ..strokeWidth = borderStrokeWidth;
 
-      if (polygonOpt.isDotted) {
-        var spacing = polygonOpt.borderStrokeWidth * 1.5;
-        _paintDottedLine(
-            canvas, polygonOpt.offsets, borderRadius, spacing, borderPaint);
+      if (dottedBorder) {
+        var spacing = borderStrokeWidth * 1.5;
+        _paintDottedLine(canvas, offsets, borderRadius, spacing, borderPaint);
 
-        if (!polygonOpt.disableHolesBorder &&
-            null != polygonOpt.holeOffsetsList) {
-          for (var offsets in polygonOpt.holeOffsetsList!) {
+        if (disableHolesBorder && null != holeOffsetsList) {
+          for (var offsets in holeOffsetsList!) {
             _paintDottedLine(
                 canvas, offsets, borderRadius, spacing, borderPaint);
           }
         }
       } else {
-        _paintLine(canvas, polygonOpt.offsets, borderRadius, borderPaint);
+        _paintLine(canvas, offsets, borderRadius, borderPaint);
 
-        if (!polygonOpt.disableHolesBorder &&
-            null != polygonOpt.holeOffsetsList) {
-          for (var offsets in polygonOpt.holeOffsetsList!) {
+        if (!disableHolesBorder && null != holeOffsetsList) {
+          for (var offsets in holeOffsetsList!) {
             _paintLine(canvas, offsets, borderRadius, borderPaint);
           }
         }
@@ -223,22 +347,22 @@ class PolygonPainter extends CustomPainter {
   void _paintPolygon(Canvas canvas, Rect rect) {
     final paint = Paint();
 
-    if (null != polygonOpt.holeOffsetsList) {
+    if (null != holeOffsetsList) {
       canvas.saveLayer(rect, paint);
       paint.style = PaintingStyle.fill;
 
-      for (var offsets in polygonOpt.holeOffsetsList!) {
+      for (var offsets in holeOffsetsList!) {
         var path = Path();
         path.addPolygon(offsets, true);
         canvas.drawPath(path, paint);
       }
 
       paint
-        ..color = polygonOpt.color
+        ..color = color
         ..blendMode = BlendMode.srcOut;
 
       var path = Path();
-      path.addPolygon(polygonOpt.offsets, true);
+      path.addPolygon(offsets, true);
       canvas.drawPath(path, paint);
 
       _paintBorder(canvas);
@@ -248,10 +372,10 @@ class PolygonPainter extends CustomPainter {
       canvas.clipRect(rect);
       paint
         ..style = PaintingStyle.fill
-        ..color = polygonOpt.color;
+        ..color = color;
 
       var path = Path();
-      path.addPolygon(polygonOpt.offsets, true);
+      path.addPolygon(offsets, true);
       canvas.drawPath(path, paint);
 
       _paintBorder(canvas);

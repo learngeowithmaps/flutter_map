@@ -45,12 +45,14 @@ extension LatLngHelper on LatLng {
   }
 }
 
-abstract class MapElement<T> {
+abstract class MapElement<T, W> {
   ///used in comparing
   final dynamic id;
   final T builder;
 
   MapElement({required this.id, required this.builder});
+
+  W copyWithNewPoint(LatLng location);
 
   @override
   bool operator ==(Object other) {
