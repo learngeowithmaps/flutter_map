@@ -6,7 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart';
 
-class PolylineLayerOptions extends LayerOptions {
+class PolylineLayerOptions extends LayerOptions<Polyline> {
   final List<Polyline> polylines;
   final bool polylineCulling;
 
@@ -15,7 +15,11 @@ class PolylineLayerOptions extends LayerOptions {
     this.polylines = const [],
     this.polylineCulling = false,
     Stream<Null>? rebuild,
-  }) : super(key: key, rebuild: rebuild) {
+  }) : super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: null,
+        ) {
     if (polylineCulling) {
       for (var polyline in polylines) {
         polyline.boundingBox = LatLngBounds.fromPoints(polyline.points);

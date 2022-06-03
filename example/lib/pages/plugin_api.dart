@@ -49,7 +49,11 @@ class MyCustomPluginOptions extends LayerOptions {
     Key? key,
     this.text = '',
     Stream<Null>? rebuild,
-  }) : super(key: key, rebuild: rebuild);
+  }) : super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: null,
+        );
 }
 
 class MyCustomPlugin implements MapPlugin {

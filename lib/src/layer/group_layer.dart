@@ -10,7 +10,11 @@ class GroupLayerOptions extends LayerOptions {
     Key? key,
     this.group = const [],
     Stream<Null>? rebuild,
-  }) : super(key: key, rebuild: rebuild);
+  }) : super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: null,
+        );
 }
 
 class GroupLayerWidget extends StatelessWidget {

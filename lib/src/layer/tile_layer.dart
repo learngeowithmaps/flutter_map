@@ -8,6 +8,7 @@ import 'package:flutter_map/src/core/bounds.dart';
 import 'package:flutter_map/src/core/point.dart';
 import 'package:flutter_map/src/core/util.dart' as util;
 import 'package:flutter_map/src/geo/crs/crs.dart';
+import 'package:flutter_map/src/gestures/map_events.dart';
 import 'package:flutter_map/src/layer/tile_builder/tile_builder.dart';
 import 'package:flutter_map/src/layer/tile_provider/tile_provider.dart';
 import 'package:flutter_map/src/map/map.dart';
@@ -319,7 +320,11 @@ class TileLayerOptions extends LayerOptions {
         additionalOptions = additionalOptions == null
             ? const <String, String>{}
             : Map.from(additionalOptions),
-        super(key: key, rebuild: rebuild);
+        super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: null,
+        );
 }
 
 class WMSTileLayerOptions {

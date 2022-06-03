@@ -11,7 +11,11 @@ class CircleLayerOptions extends LayerOptions {
     Key? key,
     this.circles = const [],
     Stream<Null>? rebuild,
-  }) : super(key: key, rebuild: rebuild);
+  }) : super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: null,
+        );
 }
 
 class CircleMarker {

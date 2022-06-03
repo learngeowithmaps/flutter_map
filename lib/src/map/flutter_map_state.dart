@@ -35,9 +35,14 @@ class FlutterMapState extends MapGestureMixin {
   @override
   void initState() {
     super.initState();
-    mapState = MapState(options, (degree) {
-      if (mounted) setState(() => {});
-    }, mapController.mapEventSink);
+    mapState = MapState(
+      options,
+      (degree) {
+        if (mounted) setState(() => {});
+      },
+      mapController.mapEventSink,
+      widget.layers,
+    );
     mapController.state = mapState;
 
     // Callback onMapCreated if not null
@@ -73,6 +78,10 @@ class FlutterMapState extends MapGestureMixin {
     return group.stream;
   }
 
+  bool get _noGestures {
+    return widget.layers.any((element) => element.handlingTouch);
+  }
+
   @override
   Widget build(BuildContext context) {
     _disposeStreamGroups();
@@ -84,22 +93,87 @@ class FlutterMapState extends MapGestureMixin {
       return MapStateInheritedWidget(
         mapState: mapState,
         child: Listener(
-          onPointerDown: savePointer,
-          onPointerCancel: removePointer,
-          onPointerUp: removePointer,
+          onPointerDown: (event) {
+            if (_noGestures) {
+              return;
+            }
+            savePointer(event);
+          },
+          onPointerCancel: (event) {
+            if (_noGestures) {
+              return;
+            }
+            removePointer(event);
+          },
+          onPointerUp: (event) {
+            if (_noGestures) {
+              return;
+            }
+            removePointer(event);
+          },
           child: PositionedTapDetector2(
             controller: _positionedTapController,
-            onTap: handleTap,
-            onLongPress: handleLongPress,
-            onDoubleTap: handleDoubleTap,
+            onTap: (event) {
+              if (_noGestures) {
+                return;
+              }
+              handleTap(event);
+            },
+            onLongPress: (event) {
+              if (_noGestures) {
+                return;
+              }
+              handleLongPress(event);
+            },
+            onDoubleTap: (event) {
+              if (_noGestures) {
+                return;
+              }
+              handleLongPress(event);
+            },
             child: GestureDetector(
-              onScaleStart: handleScaleStart,
-              onScaleUpdate: handleScaleUpdate,
-              onScaleEnd: handleScaleEnd,
-              onTap: _positionedTapController.onTap,
-              onLongPress: _positionedTapController.onLongPress,
-              onTapDown: _positionedTapController.onTapDown,
-              onTapUp: handleOnTapUp,
+              onScaleStart: (event) {
+                if (_noGestures) {
+                  return;
+                }
+                handleScaleStart(event);
+              },
+              onScaleUpdate: (event) {
+                if (_noGestures) {
+                  return;
+                }
+                handleScaleUpdate(event);
+              },
+              onScaleEnd: (event) {
+                if (_noGestures) {
+                  return;
+                }
+                handleScaleEnd(event);
+              },
+              onTap: () {
+                if (_noGestures) {
+                  return;
+                }
+                _positionedTapController.onTap();
+              },
+              onLongPress: () {
+                if (_noGestures) {
+                  return;
+                }
+                _positionedTapController.onLongPress();
+              },
+              onTapDown: (event) {
+                if (_noGestures) {
+                  return;
+                }
+                _positionedTapController.onTapDown(event);
+              },
+              onTapUp: (event) {
+                if (_noGestures) {
+                  return;
+                }
+                handleOnTapUp(event);
+              },
               child: ClipRect(
                 child: Stack(
                   children: [

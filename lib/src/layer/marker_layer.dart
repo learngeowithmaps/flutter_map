@@ -1,10 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/core/bounds.dart';
+import 'package:flutter_map/src/helpers/helpers.dart';
 import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart';
 
-class MarkerLayerOptions extends LayerOptions {
+class MarkerLayerOptions extends LayerOptions<Marker> {
   final List<Marker> markers;
 
   /// If true markers will be counter rotated to the map rotation
@@ -38,7 +40,15 @@ class MarkerLayerOptions extends LayerOptions {
     this.rotateOrigin,
     this.rotateAlignment = Alignment.center,
     Stream<Null>? rebuild,
-  }) : super(key: key, rebuild: rebuild);
+    LayerElementDragCallback? onLayerElementDrag,
+  }) : super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: onLayerElementDrag,
+        );
+
+  @override
+  void handleDrag(_) {}
 }
 
 class Anchor {
@@ -103,10 +113,8 @@ enum AnchorAlign {
   center,
 }
 
-class Marker {
+class Marker extends MapElement<WidgetBuilder> {
   final LatLng point;
-  final WidgetBuilder builder;
-  final Key? key;
   final double width;
   final double height;
   final Anchor anchor;
@@ -137,15 +145,32 @@ class Marker {
 
   Marker({
     required this.point,
-    required this.builder,
-    this.key,
+    required WidgetBuilder builder,
+    dynamic id,
     this.width = 30.0,
     this.height = 30.0,
     this.rotate,
     this.rotateOrigin,
     this.rotateAlignment,
     AnchorPos? anchorPos,
-  }) : anchor = Anchor.forPos(anchorPos, width, height);
+  })  : anchor = Anchor.forPos(anchorPos, width, height),
+        super(
+          id: id ?? DateTime.now(),
+          builder: builder,
+        );
+
+  Marker copyWithNewPoint(LatLng point) {
+    return Marker(
+      point: point,
+      builder: builder,
+      width: width,
+      height: height,
+      rotate: rotate,
+      rotateAlignment: rotateAlignment,
+      rotateOrigin: rotateOrigin,
+      id: id,
+    );
+  }
 }
 
 class MarkerLayerWidget extends StatelessWidget {
@@ -156,7 +181,11 @@ class MarkerLayerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mapState = MapState.maybeOf(context)!;
-    return MarkerLayer(options, mapState, mapState.onMoved);
+    return MarkerLayer(
+      options,
+      mapState,
+      mapState.onMoved,
+    );
   }
 }
 
@@ -173,6 +202,7 @@ class MarkerLayer extends StatefulWidget {
 }
 
 class _MarkerLayerState extends State<MarkerLayer> {
+  Marker? _draggingMarker;
   var lastZoom = -1.0;
 
   /// List containing cached pixel positions of markers
@@ -184,13 +214,17 @@ class _MarkerLayerState extends State<MarkerLayer> {
   // Calling this every time markerOpts change should guarantee proper length
   List<CustomPoint> generatePxCache() => List.generate(
         widget.markerLayerOptions.markers.length,
-        (i) => widget.map.project(widget.markerLayerOptions.markers[i].point),
+        (i) => widget.map.project(
+          widget.markerLayerOptions.markers[i].point,
+        ),
       );
 
   @override
   void initState() {
     super.initState();
     _pxCache = generatePxCache();
+
+    //print(_draggingMarker?.id);
   }
 
   @override
@@ -242,19 +276,60 @@ class _MarkerLayerState extends State<MarkerLayer> {
 
           markers.add(
             Positioned(
-              key: marker.key,
+              key: ValueKey(marker.id),
               width: marker.width,
               height: marker.height,
               left: pos.x - width,
               top: pos.y - height,
-              child: markerWidget,
+              child: GestureDetector(
+                onTapDown: (deets) {
+                  setState(() {
+                    widget.markerLayerOptions.handlingTouch = true;
+                    _draggingMarker = marker;
+                  });
+                },
+                child: Container(
+                  color: marker == _draggingMarker ? Colors.blueGrey : null,
+                  child: markerWidget,
+                ),
+              ),
             ),
           );
         }
         lastZoom = widget.map.zoom;
-        return Container(
-          child: Stack(
-            children: markers,
+        return Listener(
+          onPointerMove: widget.markerLayerOptions.handlingTouch
+              ? (details) {
+                  if (_draggingMarker != null) {
+                    final location = widget.map.offsetToLatLng(
+                      details.localPosition,
+                      context.size!.width,
+                      context.size!.height,
+                    );
+
+                    widget.markerLayerOptions.markers.remove(_draggingMarker!);
+                    _draggingMarker =
+                        _draggingMarker!.copyWithNewPoint(location);
+                    widget.markerLayerOptions.markers.add(_draggingMarker!);
+
+                    widget.markerLayerOptions.onLayerElementDrag?.call(
+                      _draggingMarker!,
+                      details,
+                    );
+                    setState(() => _pxCache = generatePxCache());
+                  }
+                }
+              : null,
+          onPointerUp: (_) {
+            setState(() {
+              widget.markerLayerOptions.handlingTouch = false;
+              _draggingMarker = null;
+            });
+          },
+          child: Container(
+            child: Stack(
+              children: markers,
+            ),
           ),
         );
       },

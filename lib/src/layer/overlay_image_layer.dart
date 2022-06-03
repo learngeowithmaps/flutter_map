@@ -12,7 +12,11 @@ class OverlayImageLayerOptions extends LayerOptions {
     Key? key,
     this.overlayImages = const [],
     Stream<Null>? rebuild,
-  }) : super(key: key, rebuild: rebuild);
+  }) : super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: null,
+        );
 }
 
 class OverlayImage {

@@ -29,7 +29,11 @@ class ZoomButtonsPluginOption extends LayerOptions {
     this.zoomOutColorIcon,
     this.zoomOutIcon = Icons.zoom_out,
     Stream<Null>? rebuild,
-  }) : super(key: key, rebuild: rebuild);
+  }) : super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: null,
+        );
 }
 
 class ZoomButtonsPlugin implements MapPlugin {

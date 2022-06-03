@@ -211,6 +211,7 @@ abstract class MapGestureMixin extends State<FlutterMap>
     final eventSource = _dragMode
         ? MapEventSource.dragStart
         : MapEventSource.multiFingerGestureStart;
+
     closeFlingAnimationController(eventSource);
     closeDoubleTapController(eventSource);
 
@@ -453,6 +454,7 @@ abstract class MapGestureMixin extends State<FlutterMap>
 
     if (_dragStarted || _pinchZoomStarted || _pinchMoveStarted) {
       _dragStarted = _pinchZoomStarted = _pinchMoveStarted = false;
+
       mapState.emitMapEvent(
         MapEventMoveEnd(
           center: mapState.center,

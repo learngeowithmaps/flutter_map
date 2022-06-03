@@ -20,7 +20,11 @@ class ScaleLayerPluginOption extends LayerOptions {
     this.lineWidth = 2,
     this.padding,
     Stream<Null>? rebuild,
-  }) : super(key: key, rebuild: rebuild);
+  }) : super(
+          key: key,
+          rebuild: rebuild,
+          onLayerElementDrag: null,
+        );
 }
 
 class ScaleLayerPlugin implements MapPlugin {

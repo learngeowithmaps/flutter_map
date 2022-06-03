@@ -77,6 +77,7 @@ class MapState {
   final ValueChanged<double> onRotationChanged;
   final StreamController<Null> _onMoveSink;
   final StreamSink<MapEvent> _mapEventSink;
+  final List<LayerOptions> layers;
 
   double _zoom;
   double _rotation;
@@ -98,7 +99,8 @@ class MapState {
   late CustomPoint _pixelOrigin;
   bool _initialized = false;
 
-  MapState(this.options, this.onRotationChanged, this._mapEventSink)
+  MapState(
+      this.options, this.onRotationChanged, this._mapEventSink, this.layers)
       : _rotation = options.rotation,
         _rotationRad = degToRadian(options.rotation),
         _zoom = options.zoom,
@@ -110,6 +112,15 @@ class MapState {
   CustomPoint? _originalSize;
 
   CustomPoint? get originalSize => _originalSize;
+
+  LatLng offsetToLatLng(Offset offset, double width, double height) {
+    var localPoint = CustomPoint(offset.dx, offset.dy);
+    var localPointCenterDistance =
+        CustomPoint((width / 2) - localPoint.x, (height / 2) - localPoint.y);
+    var mapCenter = project(center);
+    var point = mapCenter - localPointCenterDistance;
+    return unproject(point);
+  }
 
   void setOriginalSize(double width, double height) {
     final isCurrSizeNull = _originalSize == null;
