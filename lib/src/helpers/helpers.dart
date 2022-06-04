@@ -1,3 +1,5 @@
+library flutter_map.helpers;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
@@ -47,18 +49,26 @@ extension LatLngHelper on LatLng {
 
 abstract class MapElement<T, W> {
   ///used in comparing
+  final VoidCallback? onTap;
+  final LocationCallaback? onDrag;
   final dynamic id;
   final T builder;
 
-  MapElement({required this.id, required this.builder});
+  MapElement(
+      {required this.onTap,
+      required this.onDrag,
+      required this.id,
+      required this.builder});
 
   W copyWithNewPoint(LatLng location);
 
   @override
   bool operator ==(Object other) {
-    return other is Marker && other.id == id;
+    return other is MapElement && other.id == id;
   }
 
   @override
   int get hashCode => id.hashCode;
 }
+
+typedef void LocationCallaback(LatLng location);

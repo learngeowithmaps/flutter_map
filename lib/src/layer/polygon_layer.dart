@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/src/helpers/map_toolkit.dart';
 import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
 import '../helpers/helpers.dart';
@@ -45,17 +46,28 @@ class Polygon extends MapElement<PolygonBuilder, Polygon> {
     required PolygonBuilder builder,
     required this.points,
     this.holePointsList,
+    VoidCallback? onTap,
+    LocationCallaback? onDrag,
   })  : holeOffsetsList = null == holePointsList || holePointsList.isEmpty
             ? null
             : List.generate(holePointsList.length, (_) => []),
         super(
           builder: builder,
           id: id,
+          onDrag: onDrag,
+          onTap: onTap,
         );
   @override
   Polygon copyWithNewPoint(LatLng point) {
+    final oldCenter = LatLngHelper.centerOfListOfPoints(points);
+    final delta = oldCenter.difference(point);
+    final newPoints = points.map((e) {
+      return e.add(
+        delta,
+      );
+    }).toList();
     return Polygon(
-      points: points,
+      points: newPoints,
       holePointsList: holePointsList,
       id: id,
       builder: builder,
@@ -133,19 +145,12 @@ class _PolygonLayerState extends State<PolygonLayer> {
           polygons.add(
             SizedBox.fromSize(
               size: size,
-              child: GestureDetector(
-                child: polygon.builder(
-                  context,
-                  polygon.points,
-                  polygon.holePointsList,
-                  polygon.holeOffsetsList,
-                ),
-                onTapDown: (deets) {
-                  setState(() {
-                    widget.polygonOpts.handlingTouch = true;
-                    _draggingPolygon = polygon;
-                  });
-                },
+              child: polygon.builder(
+                context,
+                polygon.points,
+                polygon.offsets,
+                polygon.holePointsList,
+                polygon.holeOffsetsList,
               ),
             ),
           );
@@ -166,10 +171,7 @@ class _PolygonLayerState extends State<PolygonLayer> {
                         _draggingPolygon!.copyWithNewPoint(location);
                     widget.polygonOpts.polygons.add(_draggingPolygon!);
 
-                    widget.polygonOpts.onLayerElementDrag?.call(
-                      _draggingPolygon!,
-                      details,
-                    );
+                    _draggingPolygon!.onDrag?.call(location);
                     setState(() {});
                   }
                 }
@@ -180,7 +182,18 @@ class _PolygonLayerState extends State<PolygonLayer> {
               _draggingPolygon = null;
             });
           },
-          child: Container(
+          child: PolygonGestureDetector(
+            mapState: widget.map,
+            polygons: widget.polygonOpts.polygons,
+            onTapDownOnPolygon: (polygon) {
+              setState(() {
+                widget.polygonOpts.handlingTouch = true;
+                _draggingPolygon = polygon;
+              });
+            },
+            onTapOnPolygon: (polygon) {
+              polygon.onTap?.call();
+            },
             child: Stack(
               children: polygons,
             ),
@@ -206,9 +219,70 @@ class _PolygonLayerState extends State<PolygonLayer> {
   }
 }
 
+class PolygonGestureDetector extends StatefulWidget {
+  final List<Polygon> polygons;
+  final MapState mapState;
+  final Widget child;
+  final Function(Polygon) onTapDownOnPolygon;
+  final Function(Polygon) onTapOnPolygon;
+  const PolygonGestureDetector({
+    Key? key,
+    required this.polygons,
+    required this.mapState,
+    required this.child,
+    required this.onTapDownOnPolygon,
+    required this.onTapOnPolygon,
+  }) : super(key: key);
+
+  @override
+  State<PolygonGestureDetector> createState() => _PolygonGestureDetectorState();
+}
+
+class _PolygonGestureDetectorState extends State<PolygonGestureDetector> {
+  Offset? _lastOffset;
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      child: widget.child,
+      onTapDown: (details) {
+        final p = _tapped(details.localPosition, context);
+        if (p != null) {
+          widget.onTapDownOnPolygon(p);
+          _lastOffset = details.localPosition;
+        } else {
+          _lastOffset = null;
+        }
+      },
+      onTapUp: (details) {
+        if (_lastOffset == details.localPosition) {
+          final p = _tapped(details.localPosition, context);
+          if (p != null) {
+            widget.onTapOnPolygon(p);
+          }
+        }
+      },
+    );
+  }
+
+  Polygon? _tapped(Offset offset, BuildContext context) {
+    final location = widget.mapState.offsetToLatLng(
+      offset,
+      context.size!.width,
+      context.size!.height,
+    );
+    for (var p in widget.polygons) {
+      if (PolygonUtil.containsLocation(location, p.points, true)) {
+        return p;
+      }
+    }
+    return null;
+  }
+}
+
 typedef PolygonBuilder = Widget Function(
   BuildContext context,
   List<LatLng> points,
+  List<Offset> offsets,
   List<List<LatLng>>? holePointsList,
   List<List<Offset>>? holeOffsetsList,
 );
@@ -218,14 +292,15 @@ class PolygonWidget extends StatefulWidget {
   final double borderStrokeWidth;
   final bool dottedBorder, disableHolesBorder;
   final List<LatLng> points;
-  final List<Offset> offsets = [];
+  final List<Offset> offsets;
   final List<List<LatLng>>? holePointsList;
   final List<List<Offset>>? holeOffsetsList;
   PolygonWidget({
     Key? key,
     required this.points,
-    this.holePointsList,
-    this.holeOffsetsList,
+    required this.offsets,
+    required this.holePointsList,
+    required this.holeOffsetsList,
     this.borderColor = Colors.black,
     this.color = Colors.blue,
     this.borderStrokeWidth = 1.0,
@@ -250,6 +325,7 @@ class _PolygonWidgetState extends State<PolygonWidget> {
         holePointsList: widget.holePointsList,
         disableHolesBorder: widget.disableHolesBorder,
         points: widget.points,
+        offsets: widget.offsets,
       ),
     );
   }
@@ -260,7 +336,7 @@ class PolygonPainter extends CustomPainter {
   final double borderStrokeWidth;
   final bool dottedBorder, disableHolesBorder;
   final List<LatLng> points;
-  final List<Offset> offsets = [];
+  final List<Offset> offsets;
   final List<List<LatLng>>? holePointsList;
   final List<List<Offset>>? holeOffsetsList;
 
@@ -271,6 +347,7 @@ class PolygonPainter extends CustomPainter {
     required this.dottedBorder,
     required this.disableHolesBorder,
     required this.points,
+    required this.offsets,
     required this.holePointsList,
     required this.holeOffsetsList,
   });

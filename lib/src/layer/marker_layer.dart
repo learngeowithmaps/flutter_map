@@ -153,10 +153,14 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
     this.rotateOrigin,
     this.rotateAlignment,
     AnchorPos? anchorPos,
+    VoidCallback? onTap,
+    LocationCallaback? onDrag,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
           id: id ?? DateTime.now(),
           builder: builder,
+          onDrag: onDrag,
+          onTap: onTap,
         );
   @override
   Marker copyWithNewPoint(LatLng point) {
@@ -288,6 +292,9 @@ class _MarkerLayerState extends State<MarkerLayer> {
                     _draggingMarker = marker;
                   });
                 },
+                onTap: () {
+                  marker.onTap?.call();
+                },
                 child: Container(
                   color: marker == _draggingMarker ? Colors.blueGrey : null,
                   child: markerWidget,
@@ -313,10 +320,7 @@ class _MarkerLayerState extends State<MarkerLayer> {
                         _draggingMarker!.copyWithNewPoint(location);
                     widget.markerLayerOptions.markers.add(_draggingMarker!);
 
-                    widget.markerLayerOptions.onLayerElementDrag?.call(
-                      _draggingMarker!,
-                      details,
-                    );
+                    _draggingMarker!.onDrag?.call(location);
                     setState(() => _pxCache = generatePxCache());
                   }
                 }
