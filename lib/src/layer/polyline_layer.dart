@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/src/helpers/helpers.dart';
 import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -28,28 +29,35 @@ class PolylineLayerOptions extends LayerOptions<Polyline> {
   }
 }
 
-class Polyline {
+typedef PolylineBuilder = Widget Function(
+  BuildContext context,
+  List<LatLng> points,
+  List<Offset> offsets,
+  LatLngBounds? boundingBox,
+);
+
+class Polyline extends MapElement<PolylineBuilder, Polyline> {
   final List<LatLng> points;
   final List<Offset> offsets = [];
-  final double strokeWidth;
-  final Color color;
-  final double borderStrokeWidth;
-  final Color? borderColor;
-  final List<Color>? gradientColors;
-  final List<double>? colorsStop;
-  final bool isDotted;
-  late final LatLngBounds boundingBox;
+  LatLngBounds? boundingBox;
 
   Polyline({
+    ui.VoidCallback? onTap,
+    dynamic id,
+    required PolylineBuilder builder,
     required this.points,
-    this.strokeWidth = 1.0,
-    this.color = const Color(0xFF00FF00),
-    this.borderStrokeWidth = 0.0,
-    this.borderColor = const Color(0xFFFFFF00),
-    this.gradientColors,
-    this.colorsStop,
-    this.isDotted = false,
-  });
+  }) : super(
+          builder: builder,
+          id: id,
+          onDrag: null,
+          onTap: onTap,
+        );
+
+  @override
+  Polyline copyWithNewPoint(LatLng location) {
+    // TODO: implement copyWithNewPoint
+    throw UnimplementedError();
+  }
 }
 
 class PolylineLayerWidget extends StatelessWidget {
@@ -92,17 +100,24 @@ class PolylineLayer extends StatelessWidget {
           polylineOpt.offsets.clear();
 
           if (polylineOpts.polylineCulling &&
-              !polylineOpt.boundingBox.isOverlapping(map.bounds)) {
+              (polylineOpt.boundingBox?.isOverlapping(map.bounds) ?? false)) {
             // skip this polyline as it's offscreen
             continue;
           }
 
           _fillOffsets(polylineOpt.offsets, polylineOpt.points);
 
-          polylines.add(CustomPaint(
-            painter: PolylinePainter(polylineOpt),
-            size: size,
-          ));
+          polylines.add(
+            SizedBox.fromSize(
+              size: size,
+              child: polylineOpt.builder(
+                context,
+                polylineOpt.points,
+                polylineOpt.offsets,
+                polylineOpt.boundingBox,
+              ),
+            ),
+          );
         }
 
         return Container(
@@ -129,74 +144,135 @@ class PolylineLayer extends StatelessWidget {
   }
 }
 
-class PolylinePainter extends CustomPainter {
-  final Polyline polylineOpt;
-
-  PolylinePainter(this.polylineOpt);
+class PolylineWidget extends StatelessWidget {
+  final List<LatLng> points;
+  final List<Offset> offsets;
+  final double strokeWidth;
+  final Color color;
+  final double borderStrokeWidth;
+  final Color? borderColor;
+  final List<Color>? gradientColors;
+  final List<double>? colorsStop;
+  final bool isDotted;
+  final LatLngBounds? boundingBox;
+  const PolylineWidget({
+    Key? key,
+    required this.points,
+    this.strokeWidth = 1.0,
+    this.color = const Color(0xFF00FF00),
+    this.borderStrokeWidth = 0.0,
+    this.borderColor = const Color(0xFFFFFF00),
+    this.gradientColors,
+    this.colorsStop,
+    this.isDotted = false,
+    required this.offsets,
+    required this.boundingBox,
+  }) : super(key: key);
 
   @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: PolylinePainter(
+        boundingBox: boundingBox,
+        offsets: offsets,
+        points: points,
+        borderColor: borderColor,
+        borderStrokeWidth: borderStrokeWidth,
+        color: color,
+        colorsStop: colorsStop,
+        gradientColors: gradientColors,
+        isDotted: isDotted,
+        strokeWidth: strokeWidth,
+      ),
+    );
+  }
+}
+
+class PolylinePainter extends CustomPainter {
+  //final Polyline polylineOpt;
+  final List<LatLng> points;
+  final List<Offset> offsets;
+  final double strokeWidth;
+  final Color color;
+  final double borderStrokeWidth;
+  final Color? borderColor;
+  final List<Color>? gradientColors;
+  final List<double>? colorsStop;
+  final bool isDotted;
+  final LatLngBounds? boundingBox;
+
+  PolylinePainter({
+    required this.offsets,
+    required this.boundingBox,
+    required this.points,
+    this.strokeWidth = 1.0,
+    this.color = const Color(0xFF00FF00),
+    this.borderStrokeWidth = 0.0,
+    this.borderColor = const Color(0xFFFFFF00),
+    this.gradientColors,
+    this.colorsStop,
+    this.isDotted = false,
+  });
+  @override
   void paint(Canvas canvas, Size size) {
-    if (polylineOpt.offsets.isEmpty) {
+    if (offsets.isEmpty) {
       return;
     }
     final rect = Offset.zero & size;
     canvas.clipRect(rect);
     final paint = Paint()
-      ..strokeWidth = polylineOpt.strokeWidth
+      ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..blendMode = BlendMode.srcOver;
 
-    if (polylineOpt.gradientColors == null) {
-      paint.color = polylineOpt.color;
+    if (gradientColors == null) {
+      paint.color = color;
     } else {
-      polylineOpt.gradientColors!.isNotEmpty
+      gradientColors!.isNotEmpty
           ? paint.shader = _paintGradient()
-          : paint.color = polylineOpt.color;
+          : paint.color = color;
     }
 
     Paint? filterPaint;
-    if (polylineOpt.borderColor != null) {
+    if (borderColor != null) {
       filterPaint = Paint()
-        ..color = polylineOpt.borderColor!.withAlpha(255)
-        ..strokeWidth = polylineOpt.strokeWidth
+        ..color = borderColor!.withAlpha(255)
+        ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round
         ..strokeJoin = StrokeJoin.round
         ..blendMode = BlendMode.dstOut;
     }
 
-    final borderPaint = polylineOpt.borderStrokeWidth > 0.0
+    final borderPaint = strokeWidth > 0.0
         ? (Paint()
-          ..color = polylineOpt.borderColor ?? Color(0x00000000)
-          ..strokeWidth =
-              polylineOpt.strokeWidth + polylineOpt.borderStrokeWidth
+          ..color = borderColor ?? Color(0x00000000)
+          ..strokeWidth = strokeWidth + strokeWidth
           ..strokeCap = StrokeCap.round
           ..strokeJoin = StrokeJoin.round
           ..blendMode = BlendMode.srcOver)
         : null;
     var radius = paint.strokeWidth / 2;
     var borderRadius = (borderPaint?.strokeWidth ?? 0) / 2;
-    if (polylineOpt.isDotted) {
-      var spacing = polylineOpt.strokeWidth * 1.5;
+    if (isDotted) {
+      var spacing = strokeWidth * 1.5;
       canvas.saveLayer(rect, Paint());
       if (borderPaint != null && filterPaint != null) {
-        _paintDottedLine(
-            canvas, polylineOpt.offsets, borderRadius, spacing, borderPaint);
-        _paintDottedLine(
-            canvas, polylineOpt.offsets, radius, spacing, filterPaint);
+        _paintDottedLine(canvas, offsets, borderRadius, spacing, borderPaint);
+        _paintDottedLine(canvas, offsets, radius, spacing, filterPaint);
       }
-      _paintDottedLine(canvas, polylineOpt.offsets, radius, spacing, paint);
+      _paintDottedLine(canvas, offsets, radius, spacing, paint);
       canvas.restore();
     } else {
       paint.style = PaintingStyle.stroke;
       canvas.saveLayer(rect, Paint());
       if (borderPaint != null && filterPaint != null) {
         borderPaint.style = PaintingStyle.stroke;
-        _paintLine(canvas, polylineOpt.offsets, borderPaint);
+        _paintLine(canvas, offsets, borderPaint);
         filterPaint.style = PaintingStyle.stroke;
-        _paintLine(canvas, polylineOpt.offsets, filterPaint);
+        _paintLine(canvas, offsets, filterPaint);
       }
-      _paintLine(canvas, polylineOpt.offsets, paint);
+      _paintLine(canvas, offsets, paint);
       canvas.restore();
     }
   }
@@ -221,8 +297,7 @@ class PolylinePainter extends CustomPainter {
           ? stepLength - (totalDistance - distance)
           : distance - totalDistance;
     }
-    path.addOval(
-        Rect.fromCircle(center: polylineOpt.offsets.last, radius: radius));
+    path.addOval(Rect.fromCircle(center: offsets.last, radius: radius));
     canvas.drawPath(path, paint);
   }
 
@@ -236,20 +311,19 @@ class PolylinePainter extends CustomPainter {
     }
   }
 
-  ui.Gradient _paintGradient() => ui.Gradient.linear(polylineOpt.offsets.first,
-      polylineOpt.offsets.last, polylineOpt.gradientColors!, _getColorsStop());
+  ui.Gradient _paintGradient() => ui.Gradient.linear(
+      offsets.first, offsets.last, gradientColors!, _getColorsStop());
 
-  List<double>? _getColorsStop() => (polylineOpt.colorsStop != null &&
-          polylineOpt.colorsStop!.length == polylineOpt.gradientColors!.length)
-      ? polylineOpt.colorsStop
-      : _calculateColorsStop();
+  List<double>? _getColorsStop() =>
+      (colorsStop != null && colorsStop!.length == gradientColors!.length)
+          ? colorsStop
+          : _calculateColorsStop();
 
   List<double> _calculateColorsStop() {
-    final colorsStopInterval = 1.0 / polylineOpt.gradientColors!.length;
-    return polylineOpt.gradientColors!
-        .map((gradientColor) =>
-            polylineOpt.gradientColors!.indexOf(gradientColor) *
-            colorsStopInterval)
+    final colorsStopInterval = 1.0 / gradientColors!.length;
+    return gradientColors!
+        .map<double>((gradientColor) =>
+            gradientColors!.indexOf(gradientColor) * colorsStopInterval)
         .toList();
   }
 
