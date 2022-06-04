@@ -16,10 +16,16 @@ class HomePage extends StatelessWidget {
         builder: (
           context,
           points,
+          offsets,
           holePointsList,
           holeOffsetsList,
         ) {
-          return PolygonWidget(points: points);
+          return PolygonWidget(
+            points: points,
+            offsets: offsets,
+            holeOffsetsList: holeOffsetsList,
+            holePointsList: holePointsList,
+          );
         },
       ),
     ];

@@ -46,21 +46,35 @@ class PolylinePage extends StatelessWidget {
                   PolylineLayerOptions(
                     polylines: [
                       Polyline(
-                          points: points,
-                          strokeWidth: 4.0,
-                          color: Colors.purple),
+                        points: points,
+                        builder: (context, points, offsets, boundingBox) {
+                          return PolylineWidget(
+                            points: points,
+                            offsets: offsets,
+                            boundingBox: boundingBox,
+                            strokeWidth: 4.0,
+                          );
+                        },
+                      ),
                     ],
                   ),
                   PolylineLayerOptions(
                     polylines: [
                       Polyline(
                         points: pointsGradient,
-                        strokeWidth: 4.0,
-                        gradientColors: [
-                          Color(0xffE40203),
-                          Color(0xffFEED00),
-                          Color(0xff007E2D),
-                        ],
+                        builder: (context, points, offsets, boundingBox) {
+                          return PolylineWidget(
+                            points: points,
+                            offsets: offsets,
+                            boundingBox: boundingBox,
+                            strokeWidth: 4.0,
+                            gradientColors: [
+                              Color(0xffE40203),
+                              Color(0xffFEED00),
+                              Color(0xff007E2D),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
