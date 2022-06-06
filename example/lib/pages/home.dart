@@ -9,22 +9,21 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var polygons = <Polygon>[
-      Polygon(
+    var polygons = <MultiPolygon>[
+      MultiPolygon(
         id: "6",
-        points: [LatLng(51.5, -0.09), LatLng(56.5, -2.09), LatLng(59.5, -5.09)],
+        points: [
+          [LatLng(51.5, -0.09), LatLng(56.5, -2.09), LatLng(59.5, -5.09)],
+          [LatLng(61.5, -0.09), LatLng(66.5, -2.09), LatLng(69.5, -5.09)],
+        ],
         builder: (
           context,
           points,
           offsets,
-          holePointsList,
-          holeOffsetsList,
         ) {
-          return PolygonWidget(
+          return MultiPolygonWidget(
             points: points,
             offsets: offsets,
-            holeOffsetsList: holeOffsetsList,
-            holePointsList: holePointsList,
           );
         },
       ),
@@ -77,7 +76,7 @@ class HomePage extends StatelessWidget {
                     // NetworkTileProvider or CachedNetworkTileProvider
                     tileProvider: NonCachingNetworkTileProvider(),
                   ),
-                  PolygonLayerOptions(
+                  MultiPolygonLayerOptions(
                     polygons: polygons,
                   ),
                   MarkerLayerOptions(

@@ -64,8 +64,8 @@ class GroupLayer extends StatelessWidget {
     if (options is PolylineLayerOptions) {
       return PolylineLayer(options, map, options.rebuild);
     }
-    if (options is PolygonLayerOptions) {
-      return PolygonLayer(options, map, options.rebuild);
+    if (options is MultiPolygonLayerOptions) {
+      return MultiPolygonLayer(options, map, options.rebuild);
     }
     if (options is OverlayImageLayerOptions) {
       return OverlayImageLayer(options, map, options.rebuild);

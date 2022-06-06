@@ -9,12 +9,15 @@ import 'package:flutter_map/plugin_api.dart';
 /// All LayerOptions have access to a stream that notifies when the map needs
 /// rebuilding.
 typedef void LayerElementDragCallback<T>(
-    T element, PointerMoveEvent dragDetails);
+  T element,
+  PointerMoveEvent dragDetails,
+);
 
-abstract class LayerOptions<T> {
+abstract class LayerOptions<LayerElementType> {
   final Key? key;
   final Stream<Null>? rebuild;
-  final LayerElementDragCallback<T>? onLayerElementDrag;
+  final LayerElementDragCallback<LayerElementType>? onLayerElementDrag;
+
   LayerOptions({required this.onLayerElementDrag, this.key, this.rebuild});
 
   bool handlingTouch = false;

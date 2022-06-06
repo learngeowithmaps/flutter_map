@@ -231,8 +231,8 @@ class FlutterMapState extends MapGestureMixin {
     if (options is PolylineLayerOptions) {
       return PolylineLayer(options, mapState, _merge(options));
     }
-    if (options is PolygonLayerOptions) {
-      return PolygonLayer(options, mapState, _merge(options));
+    if (options is MultiPolygonLayerOptions) {
+      return MultiPolygonLayer(options, mapState, _merge(options));
     }
     if (options is CircleLayerOptions) {
       return CircleLayer(options, mapState, _merge(options));

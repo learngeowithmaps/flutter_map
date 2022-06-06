@@ -54,7 +54,7 @@ class Polyline extends MapElement<PolylineBuilder, Polyline> {
         );
 
   @override
-  Polyline copyWithNewPoint(LatLng location) {
+  Polyline copyWithNewDelta(LatLng location) {
     // TODO: implement copyWithNewPoint
     throw UnimplementedError();
   }

@@ -163,7 +163,7 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
           onTap: onTap,
         );
   @override
-  Marker copyWithNewPoint(LatLng point) {
+  Marker copyWithNewDelta(LatLng point) {
     return Marker(
       point: point,
       builder: builder,
@@ -317,7 +317,7 @@ class _MarkerLayerState extends State<MarkerLayer> {
 
                     widget.markerLayerOptions.markers.remove(_draggingMarker!);
                     _draggingMarker =
-                        _draggingMarker!.copyWithNewPoint(location);
+                        _draggingMarker!.copyWithNewDelta(location);
                     widget.markerLayerOptions.markers.add(_draggingMarker!);
 
                     _draggingMarker!.onDrag?.call(location);

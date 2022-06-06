@@ -60,7 +60,7 @@ abstract class MapElement<T, W> {
       required this.id,
       required this.builder});
 
-  W copyWithNewPoint(LatLng location);
+  W copyWithNewDelta(LatLng location);
 
   @override
   bool operator ==(Object other) {

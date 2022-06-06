@@ -11,12 +11,12 @@ import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
 import '../helpers/helpers.dart';
 
-class PolygonLayerOptions extends LayerOptions<Polygon> {
-  final List<Polygon> polygons;
+class MultiPolygonLayerOptions extends LayerOptions<MultiPolygon> {
+  final List<MultiPolygon> polygons;
   final bool polygonCulling;
 
   /// screen space culling of polygons based on bounding box
-  PolygonLayerOptions({
+  MultiPolygonLayerOptions({
     Key? key,
     this.polygons = const [],
     this.polygonCulling = false,
@@ -28,84 +28,78 @@ class PolygonLayerOptions extends LayerOptions<Polygon> {
         ) {
     if (polygonCulling) {
       for (var polygon in polygons) {
-        polygon.boundingBox = LatLngBounds.fromPoints(polygon.points);
+        polygon.boundingBox = LatLngBounds.fromPoints(
+          [
+            for (var item in polygon.points) ...item,
+          ],
+        );
       }
     }
   }
 }
 
-class Polygon extends MapElement<PolygonBuilder, Polygon> {
-  final List<LatLng> points;
-  final List<Offset> offsets = [];
-  final List<List<LatLng>>? holePointsList;
-  final List<List<Offset>>? holeOffsetsList;
+class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
+  final List<List<LatLng>> points;
+  final List<List<Offset>> offsets = [];
   late final LatLngBounds boundingBox;
 
-  Polygon({
+  MultiPolygon({
     dynamic id,
-    required PolygonBuilder builder,
+    required MultiPolygonBuilder builder,
     required this.points,
-    this.holePointsList,
     VoidCallback? onTap,
     LocationCallaback? onDrag,
-  })  : holeOffsetsList = null == holePointsList || holePointsList.isEmpty
-            ? null
-            : List.generate(holePointsList.length, (_) => []),
-        super(
+  }) : super(
           builder: builder,
           id: id,
           onDrag: onDrag,
           onTap: onTap,
         );
   @override
-  Polygon copyWithNewPoint(LatLng point) {
-    final oldCenter = LatLngHelper.centerOfListOfPoints(points);
-    final delta = oldCenter.difference(point);
-    final newPoints = points.map((e) {
-      return e.add(
-        delta,
-      );
+  MultiPolygon copyWithNewDelta(LatLng delta) {
+    final newPoints = points.map((ee) {
+      return ee
+          .map(
+            (e) => e.add(
+              delta,
+            ),
+          )
+          .toList();
     }).toList();
-    return Polygon(
+    return MultiPolygon(
       points: newPoints,
-      holePointsList: holePointsList,
       id: id,
       builder: builder,
     );
   }
-
-  @override
-  Polygon copyWithNewDelta(LatLng location) {
-    // TODO: implement copyWithNewDelta
-    throw UnimplementedError();
-  }
 }
 
-class PolygonLayerWidget extends StatelessWidget {
-  final PolygonLayerOptions options;
-  PolygonLayerWidget({Key? key, required this.options}) : super(key: key);
+class MultiPolygonLayerWidget extends StatelessWidget {
+  final MultiPolygonLayerOptions options;
+  MultiPolygonLayerWidget({Key? key, required this.options}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final mapState = MapState.maybeOf(context)!;
-    return PolygonLayer(options, mapState, mapState.onMoved);
+    return MultiPolygonLayer(options, mapState, mapState.onMoved);
   }
 }
 
-class PolygonLayer extends StatefulWidget {
-  final PolygonLayerOptions polygonOpts;
+class MultiPolygonLayer extends StatefulWidget {
+  final MultiPolygonLayerOptions polygonOpts;
   final MapState map;
   final Stream<Null>? stream;
 
-  PolygonLayer(this.polygonOpts, this.map, this.stream)
+  MultiPolygonLayer(this.polygonOpts, this.map, this.stream)
       : super(key: polygonOpts.key);
 
   @override
-  State<PolygonLayer> createState() => _PolygonLayerState();
+  State<MultiPolygonLayer> createState() => _MultiPolygonLayerState();
 }
 
-class _PolygonLayerState extends State<PolygonLayer> {
-  Polygon? _draggingPolygon;
+class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
+  MultiPolygon? _draggingPolygon;
+  LatLng? _lastDragPoint;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -125,12 +119,6 @@ class _PolygonLayerState extends State<PolygonLayer> {
         for (var polygon in widget.polygonOpts.polygons) {
           polygon.offsets.clear();
 
-          if (null != polygon.holeOffsetsList) {
-            for (var offsets in polygon.holeOffsetsList!) {
-              offsets.clear();
-            }
-          }
-
           if (widget.polygonOpts.polygonCulling &&
               !polygon.boundingBox.isOverlapping(widget.map.bounds)) {
             // skip this polygon as it's offscreen
@@ -139,15 +127,6 @@ class _PolygonLayerState extends State<PolygonLayer> {
 
           _fillOffsets(polygon.offsets, polygon.points);
 
-          if (null != polygon.holePointsList) {
-            for (var i = 0, len = polygon.holePointsList!.length;
-                i < len;
-                ++i) {
-              _fillOffsets(
-                  polygon.holeOffsetsList![i], polygon.holePointsList![i]);
-            }
-          }
-
           polygons.add(
             SizedBox.fromSize(
               size: size,
@@ -155,8 +134,6 @@ class _PolygonLayerState extends State<PolygonLayer> {
                 context,
                 polygon.points,
                 polygon.offsets,
-                polygon.holePointsList,
-                polygon.holeOffsetsList,
               ),
             ),
           );
@@ -172,9 +149,13 @@ class _PolygonLayerState extends State<PolygonLayer> {
                       context.size!.height,
                     );
 
+                    final delta = _lastDragPoint!.difference(location);
+                    _lastDragPoint = location;
+
                     widget.polygonOpts.polygons.remove(_draggingPolygon!);
+
                     _draggingPolygon =
-                        _draggingPolygon!.copyWithNewPoint(location);
+                        _draggingPolygon!.copyWithNewDelta(delta);
                     widget.polygonOpts.polygons.add(_draggingPolygon!);
 
                     _draggingPolygon!.onDrag?.call(location);
@@ -186,15 +167,21 @@ class _PolygonLayerState extends State<PolygonLayer> {
             setState(() {
               widget.polygonOpts.handlingTouch = false;
               _draggingPolygon = null;
+              _lastDragPoint = null;
             });
           },
-          child: PolygonGestureDetector(
+          child: MultiPolygonGestureDetector(
             mapState: widget.map,
             polygons: widget.polygonOpts.polygons,
-            onTapDownOnPolygon: (polygon) {
+            onTapDownOnPolygon: (polygon, details) {
               setState(() {
                 widget.polygonOpts.handlingTouch = true;
                 _draggingPolygon = polygon;
+                _lastDragPoint = widget.map.offsetToLatLng(
+                  details.localPosition,
+                  context.size!.width,
+                  context.size!.height,
+                );
               });
             },
             onTapOnPolygon: (polygon) {
@@ -209,29 +196,37 @@ class _PolygonLayerState extends State<PolygonLayer> {
     );
   }
 
-  void _fillOffsets(final List<Offset> offsets, final List<LatLng> points) {
-    for (var i = 0, len = points.length; i < len; ++i) {
-      var point = points[i];
+  void _fillOffsets(
+    final List<List<Offset>> alloffsets,
+    final List<List<LatLng>> allpoints,
+  ) {
+    for (var j = 0; j < allpoints.length; j++) {
+      final offsets = <Offset>[];
+      final points = allpoints[j];
+      for (var i = 0, len = points.length; i < len; ++i) {
+        var point = points[i];
 
-      var pos = widget.map.project(point);
-      pos = pos.multiplyBy(
-              widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
-          widget.map.getPixelOrigin();
-      offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
-      if (i > 0) {
+        var pos = widget.map.project(point);
+        pos = pos.multiplyBy(
+                widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
+            widget.map.getPixelOrigin();
         offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
+        if (i > 0) {
+          offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
+        }
       }
+      alloffsets.add(offsets);
     }
   }
 }
 
-class PolygonGestureDetector extends StatefulWidget {
-  final List<Polygon> polygons;
+class MultiPolygonGestureDetector extends StatefulWidget {
+  final List<MultiPolygon> polygons;
   final MapState mapState;
   final Widget child;
-  final Function(Polygon) onTapDownOnPolygon;
-  final Function(Polygon) onTapOnPolygon;
-  const PolygonGestureDetector({
+  final Function(MultiPolygon, TapDownDetails) onTapDownOnPolygon;
+  final Function(MultiPolygon) onTapOnPolygon;
+  const MultiPolygonGestureDetector({
     Key? key,
     required this.polygons,
     required this.mapState,
@@ -241,10 +236,12 @@ class PolygonGestureDetector extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<PolygonGestureDetector> createState() => _PolygonGestureDetectorState();
+  State<MultiPolygonGestureDetector> createState() =>
+      _MultiPolygonGestureDetectorState();
 }
 
-class _PolygonGestureDetectorState extends State<PolygonGestureDetector> {
+class _MultiPolygonGestureDetectorState
+    extends State<MultiPolygonGestureDetector> {
   Offset? _lastOffset;
   @override
   Widget build(BuildContext context) {
@@ -253,7 +250,7 @@ class _PolygonGestureDetectorState extends State<PolygonGestureDetector> {
       onTapDown: (details) {
         final p = _tapped(details.localPosition, context);
         if (p != null) {
-          widget.onTapDownOnPolygon(p);
+          widget.onTapDownOnPolygon(p, details);
           _lastOffset = details.localPosition;
         } else {
           _lastOffset = null;
@@ -270,14 +267,15 @@ class _PolygonGestureDetectorState extends State<PolygonGestureDetector> {
     );
   }
 
-  Polygon? _tapped(Offset offset, BuildContext context) {
+  MultiPolygon? _tapped(Offset offset, BuildContext context) {
     final location = widget.mapState.offsetToLatLng(
       offset,
       context.size!.width,
       context.size!.height,
     );
     for (var p in widget.polygons) {
-      if (PolygonUtil.containsLocation(location, p.points, true)) {
+      if (p.points.any(
+          (points) => PolygonUtil.containsLocation(location, points, true))) {
         return p;
       }
     }
@@ -285,28 +283,22 @@ class _PolygonGestureDetectorState extends State<PolygonGestureDetector> {
   }
 }
 
-typedef PolygonBuilder = Widget Function(
+typedef MultiPolygonBuilder = Widget Function(
   BuildContext context,
-  List<LatLng> points,
-  List<Offset> offsets,
-  List<List<LatLng>>? holePointsList,
-  List<List<Offset>>? holeOffsetsList,
+  List<List<LatLng>> points,
+  List<List<Offset>> offsets,
 );
 
-class PolygonWidget extends StatefulWidget {
+class MultiPolygonWidget extends StatefulWidget {
   final Color borderColor, color;
   final double borderStrokeWidth;
   final bool dottedBorder, disableHolesBorder;
-  final List<LatLng> points;
-  final List<Offset> offsets;
-  final List<List<LatLng>>? holePointsList;
-  final List<List<Offset>>? holeOffsetsList;
-  PolygonWidget({
+  final List<List<LatLng>> points;
+  final List<List<Offset>> offsets;
+  MultiPolygonWidget({
     Key? key,
     required this.points,
     required this.offsets,
-    required this.holePointsList,
-    required this.holeOffsetsList,
     this.borderColor = Colors.black,
     this.color = Colors.blue,
     this.borderStrokeWidth = 1.0,
@@ -315,59 +307,56 @@ class PolygonWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<PolygonWidget> createState() => _PolygonWidgetState();
+  State<MultiPolygonWidget> createState() => _MultiPolygonWidgetState();
 }
 
-class _PolygonWidgetState extends State<PolygonWidget> {
+class _MultiPolygonWidgetState extends State<MultiPolygonWidget> {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: PolygonPainter(
+      painter: MultiPolygonPainter(
         borderColor: widget.borderColor,
         color: widget.color,
         borderStrokeWidth: widget.borderStrokeWidth,
         dottedBorder: widget.dottedBorder,
-        holeOffsetsList: widget.holeOffsetsList,
-        holePointsList: widget.holePointsList,
-        disableHolesBorder: widget.disableHolesBorder,
-        points: widget.points,
-        offsets: widget.offsets,
+        allpoints: widget.points,
+        alloffsets: widget.offsets,
       ),
     );
   }
 }
 
-class PolygonPainter extends CustomPainter {
+class MultiPolygonPainter extends CustomPainter {
   final Color borderColor, color;
   final double borderStrokeWidth;
-  final bool dottedBorder, disableHolesBorder;
-  final List<LatLng> points;
-  final List<Offset> offsets;
-  final List<List<LatLng>>? holePointsList;
-  final List<List<Offset>>? holeOffsetsList;
+  final bool dottedBorder;
+  final List<List<LatLng>> allpoints;
+  final List<List<Offset>> alloffsets;
 
-  PolygonPainter({
+  MultiPolygonPainter({
     required this.borderColor,
     required this.color,
     required this.borderStrokeWidth,
     required this.dottedBorder,
-    required this.disableHolesBorder,
-    required this.points,
-    required this.offsets,
-    required this.holePointsList,
-    required this.holeOffsetsList,
+    required this.allpoints,
+    required this.alloffsets,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (offsets.isEmpty) {
-      return;
+    for (var offsets in alloffsets) {
+      if (offsets.isNotEmpty) {
+        final rect = Offset.zero & size;
+        _paintPolygon(
+          canvas,
+          rect,
+          offsets,
+        );
+      }
     }
-    final rect = Offset.zero & size;
-    _paintPolygon(canvas, rect);
   }
 
-  void _paintBorder(Canvas canvas) {
+  void _paintBorder(Canvas canvas, List<Offset> offsets) {
     if (borderStrokeWidth > 0.0) {
       var borderRadius = (borderStrokeWidth / 2);
 
@@ -378,21 +367,8 @@ class PolygonPainter extends CustomPainter {
       if (dottedBorder) {
         var spacing = borderStrokeWidth * 1.5;
         _paintDottedLine(canvas, offsets, borderRadius, spacing, borderPaint);
-
-        if (disableHolesBorder && null != holeOffsetsList) {
-          for (var offsets in holeOffsetsList!) {
-            _paintDottedLine(
-                canvas, offsets, borderRadius, spacing, borderPaint);
-          }
-        }
       } else {
         _paintLine(canvas, offsets, borderRadius, borderPaint);
-
-        if (!disableHolesBorder && null != holeOffsetsList) {
-          for (var offsets in holeOffsetsList!) {
-            _paintLine(canvas, offsets, borderRadius, borderPaint);
-          }
-        }
       }
     }
   }
@@ -427,46 +403,30 @@ class PolygonPainter extends CustomPainter {
     }
   }
 
-  void _paintPolygon(Canvas canvas, Rect rect) {
+  void _paintPolygon(
+    Canvas canvas,
+    Rect rect,
+    List<Offset> offsets,
+  ) {
     final paint = Paint();
 
-    if (null != holeOffsetsList) {
-      canvas.saveLayer(rect, paint);
-      paint.style = PaintingStyle.fill;
+    canvas.clipRect(rect);
+    paint
+      ..style = PaintingStyle.fill
+      ..color = color;
 
-      for (var offsets in holeOffsetsList!) {
-        var path = Path();
-        path.addPolygon(offsets, true);
-        canvas.drawPath(path, paint);
-      }
+    var path = Path();
+    path.addPolygon(offsets, true);
+    canvas.drawPath(path, paint);
 
-      paint
-        ..color = color
-        ..blendMode = BlendMode.srcOut;
-
-      var path = Path();
-      path.addPolygon(offsets, true);
-      canvas.drawPath(path, paint);
-
-      _paintBorder(canvas);
-
-      canvas.restore();
-    } else {
-      canvas.clipRect(rect);
-      paint
-        ..style = PaintingStyle.fill
-        ..color = color;
-
-      var path = Path();
-      path.addPolygon(offsets, true);
-      canvas.drawPath(path, paint);
-
-      _paintBorder(canvas);
-    }
+    _paintBorder(
+      canvas,
+      offsets,
+    );
   }
 
   @override
-  bool shouldRepaint(PolygonPainter other) => false;
+  bool shouldRepaint(MultiPolygonPainter other) => false;
 
   double _dist(Offset v, Offset w) {
     return sqrt(_dist2(v, w));
