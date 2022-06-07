@@ -88,7 +88,11 @@ class PolygonLayerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mapState = MapState.maybeOf(context)!;
-    return PolygonLayer(options, mapState, mapState.onMoved);
+    return PolygonLayer(
+      options,
+      mapState,
+      mapState.onMoved,
+    );
   }
 }
 
@@ -277,7 +281,8 @@ class _PolygonGestureDetectorState extends State<PolygonGestureDetector> {
       context.size!.height,
     );
     for (var p in widget.polygons) {
-      if (PolygonUtil.containsLocation(location, p.points, true)) {
+      if (p.onDrag != null &&
+          PolygonUtil.containsLocation(location, p.points, true)) {
         return p;
       }
     }

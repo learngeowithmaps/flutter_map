@@ -46,6 +46,7 @@ class PolylinePage extends StatelessWidget {
                   PolylineLayerOptions(
                     polylines: [
                       Polyline(
+                        id: "4",
                         points: points,
                         builder: (context, points, offsets, boundingBox) {
                           return PolylineWidget(
@@ -61,6 +62,7 @@ class PolylinePage extends StatelessWidget {
                   PolylineLayerOptions(
                     polylines: [
                       Polyline(
+                        id: "4",
                         points: pointsGradient,
                         builder: (context, points, offsets, boundingBox) {
                           return PolylineWidget(

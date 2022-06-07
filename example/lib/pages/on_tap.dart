@@ -21,7 +21,9 @@ class OnTapPageState extends State<OnTapPage> {
   @override
   Widget build(BuildContext context) {
     var markers = <Marker>[
+      /* 
       Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: london,
@@ -36,6 +38,7 @@ class OnTapPageState extends State<OnTapPage> {
         )),
       ),
       Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: dublin,
@@ -52,6 +55,7 @@ class OnTapPageState extends State<OnTapPage> {
         )),
       ),
       Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: paris,
@@ -64,7 +68,7 @@ class OnTapPageState extends State<OnTapPage> {
           },
           child: FlutterLogo(textColor: Colors.purple),
         )),
-      ),
+      ), */
     ];
 
     return Scaffold(

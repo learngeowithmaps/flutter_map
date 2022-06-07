@@ -105,7 +105,9 @@ class _MovingWithoutRefreshAllMapMarkersState
 }
 
 List<Marker> _markers = [
+  /* 
   Marker(
+    id: "1",
     width: 80.0,
     height: 80.0,
     point: LatLng(51.5, -0.09),
@@ -114,6 +116,7 @@ List<Marker> _markers = [
     ),
   ),
   Marker(
+    id: "1",
     width: 80.0,
     height: 80.0,
     point: LatLng(53.3498, -6.2603),
@@ -122,11 +125,12 @@ List<Marker> _markers = [
     ),
   ),
   Marker(
+    id: "1",
     width: 80.0,
     height: 80.0,
     point: LatLng(48.8566, 2.3522),
     builder: (ctx) => Container(
       child: FlutterLogo(),
     ),
-  ),
+  ), */
 ];

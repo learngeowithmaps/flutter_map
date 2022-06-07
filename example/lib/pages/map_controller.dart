@@ -33,7 +33,9 @@ class MapControllerPageState extends State<MapControllerPage> {
   @override
   Widget build(BuildContext context) {
     var markers = <Marker>[
+      /* 
       Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: london,
@@ -43,6 +45,7 @@ class MapControllerPageState extends State<MapControllerPage> {
         ),
       ),
       Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: dublin,
@@ -54,6 +57,7 @@ class MapControllerPageState extends State<MapControllerPage> {
         ),
       ),
       Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: paris,
@@ -61,7 +65,7 @@ class MapControllerPageState extends State<MapControllerPage> {
           key: Key('purple'),
           child: FlutterLogo(textColor: Colors.purple),
         ),
-      ),
+      ), */
     ];
 
     return Scaffold(
