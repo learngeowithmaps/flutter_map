@@ -44,7 +44,7 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
   late final LatLngBounds boundingBox;
 
   MultiPolygon({
-    dynamic id,
+    required String id,
     required MultiPolygonBuilder builder,
     required this.points,
     VoidCallback? onTap,

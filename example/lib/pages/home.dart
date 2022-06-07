@@ -27,6 +27,23 @@ class HomePage extends StatelessWidget {
           );
         },
       ),
+      MultiPolygon(
+        id: "7",
+        points: [
+          [LatLng(41.5, -0.09), LatLng(46.5, -2.09), LatLng(49.5, -5.09)],
+          [LatLng(31.5, -0.09), LatLng(36.5, -2.09), LatLng(39.5, -5.09)],
+        ],
+        builder: (
+          context,
+          points,
+          offsets,
+        ) {
+          return MultiPolygonWidget(
+            points: points,
+            offsets: offsets,
+          );
+        },
+      ),
     ];
     var markers = <Marker>[
       Marker(

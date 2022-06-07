@@ -146,7 +146,7 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
   Marker({
     required this.point,
     required WidgetBuilder builder,
-    dynamic id,
+    required String id,
     this.width = 30.0,
     this.height = 30.0,
     this.rotate,
@@ -157,7 +157,7 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
     LocationCallaback? onDrag,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
-          id: id ?? DateTime.now(),
+          id: id,
           builder: builder,
           onDrag: onDrag,
           onTap: onTap,

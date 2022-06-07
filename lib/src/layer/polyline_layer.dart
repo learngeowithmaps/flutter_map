@@ -43,7 +43,7 @@ class Polyline extends MapElement<PolylineBuilder, Polyline> {
 
   Polyline({
     ui.VoidCallback? onTap,
-    dynamic id,
+    required String id,
     required PolylineBuilder builder,
     required this.points,
   }) : super(

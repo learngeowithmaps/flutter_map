@@ -51,7 +51,7 @@ abstract class MapElement<T, W> {
   ///used in comparing
   final VoidCallback? onTap;
   final LocationCallaback? onDrag;
-  final dynamic id;
+  final String id;
   final T builder;
 
   MapElement(
