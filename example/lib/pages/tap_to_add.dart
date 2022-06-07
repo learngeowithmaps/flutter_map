@@ -20,8 +20,7 @@ class TapToAddPageState extends State<TapToAddPage> {
   Widget build(BuildContext context) {
     var markers = tappedPoints.map((latlng) {
       return Marker(
-        width: 80.0,
-        height: 80.0,
+        id: "1",
         point: latlng,
         builder: (ctx) => Container(
           child: FlutterLogo(),

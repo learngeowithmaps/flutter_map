@@ -36,7 +36,9 @@ class MarkerAnchorPageState extends State<MarkerAnchorPage> {
   @override
   Widget build(BuildContext context) {
     var markers = <Marker>[
+      /* 
       Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: LatLng(51.5, -0.09),
@@ -46,6 +48,7 @@ class MarkerAnchorPageState extends State<MarkerAnchorPage> {
         anchorPos: anchorPos,
       ),
       Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: LatLng(53.3498, -6.2603),
@@ -57,6 +60,7 @@ class MarkerAnchorPageState extends State<MarkerAnchorPage> {
         anchorPos: anchorPos,
       ),
       Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: LatLng(48.8566, 2.3522),
@@ -64,7 +68,7 @@ class MarkerAnchorPageState extends State<MarkerAnchorPage> {
           child: FlutterLogo(textColor: Colors.purple),
         ),
         anchorPos: anchorPos,
-      ),
+      ), */
     ];
 
     return Scaffold(

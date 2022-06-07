@@ -274,8 +274,9 @@ class _MultiPolygonGestureDetectorState
       context.size!.height,
     );
     for (var p in widget.polygons) {
-      if (p.points.any(
-          (points) => PolygonUtil.containsLocation(location, points, true))) {
+      if (p.onDrag != null &&
+          p.points.any((points) =>
+              PolygonUtil.containsLocation(location, points, true))) {
         return p;
       }
     }

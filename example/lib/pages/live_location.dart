@@ -102,7 +102,8 @@ class _LiveLocationPageState extends State<LiveLocationPage> {
     }
 
     var markers = <Marker>[
-      Marker(
+      /* Marker(
+        id: "1",
         width: 80.0,
         height: 80.0,
         point: currentLatLng,
@@ -112,7 +113,7 @@ class _LiveLocationPageState extends State<LiveLocationPage> {
             key: ObjectKey(Colors.blue),
           ),
         ),
-      ),
+      ), */
     ];
 
     return Scaffold(

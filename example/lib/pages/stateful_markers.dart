@@ -34,13 +34,12 @@ class _StatefulMarkersPageState extends State<StatefulMarkersPage> {
   }
 
   void _addMarker(String key) {
-    _markers.add(Marker(
-      width: 40.0,
-      height: 40.0,
+    /*  _markers.add(Marker(
+      id: "1",
       point:
           LatLng(_random.nextDouble() * 10 + 48, _random.nextDouble() * 10 - 6),
       builder: (ctx) => _ColorMarker(),
-    ));
+    )); */
   }
 
   @override

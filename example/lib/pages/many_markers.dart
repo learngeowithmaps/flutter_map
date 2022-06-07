@@ -32,8 +32,9 @@ class _ManyMarkersPageState extends State<ManyMarkersPage> {
     Future.microtask(() {
       var r = Random();
       for (var x = 0; x < maxMarkersCount; x++) {
-        allMarkers.add(
+        /* allMarkers.add(
           Marker(
+            id: "1",
             point: LatLng(
               doubleInRange(r, 37, 55),
               doubleInRange(r, -9, 30),
@@ -44,7 +45,7 @@ class _ManyMarkersPageState extends State<ManyMarkersPage> {
               size: 12.0,
             ),
           ),
-        );
+        ); */
       }
       setState(() {});
     });
