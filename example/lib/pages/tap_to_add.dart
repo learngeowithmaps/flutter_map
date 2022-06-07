@@ -22,9 +22,8 @@ class TapToAddPageState extends State<TapToAddPage> {
       return Marker(
         id: "1",
         point: latlng,
-        builder: (ctx) => Container(
-          child: FlutterLogo(),
-        ),
+        builder: (ctx) =>
+            MarkerWidget.text(text: "twotwotwotwotwotwotwotwotwotwotwo"),
       );
     }).toList();
 
