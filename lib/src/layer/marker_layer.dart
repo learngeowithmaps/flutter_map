@@ -112,6 +112,7 @@ enum AnchorAlign {
   bottom,
   center,
 }
+typedef MarkerCallback = void Function(Marker);
 
 class Marker extends MapElement<WidgetBuilder, Marker> {
   final LatLng point;
@@ -153,8 +154,8 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
     this.rotateOrigin,
     this.rotateAlignment,
     AnchorPos? anchorPos,
-    MapElementCallback<MultiPolygon>? onTap,
-    MapElementCallback<MultiPolygon>? onDrag,
+    MarkerCallback? onTap,
+    MarkerCallback? onDrag,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
           id: id,

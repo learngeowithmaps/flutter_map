@@ -49,7 +49,7 @@ extension LatLngHelper on LatLng {
 
 abstract class MapElement<T, W> {
   ///used in comparing
-  final MapElementCallback<W>? onTap, onDrag;
+  final Function(W)? onTap, onDrag;
   final String id;
   final T builder;
 
@@ -69,5 +69,3 @@ abstract class MapElement<T, W> {
   @override
   int get hashCode => id.hashCode;
 }
-
-typedef void MapElementCallback<W>(W element);

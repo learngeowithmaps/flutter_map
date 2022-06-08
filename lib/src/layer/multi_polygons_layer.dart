@@ -38,6 +38,8 @@ class MultiPolygonLayerOptions extends LayerOptions<MultiPolygon> {
   }
 }
 
+typedef MultiPolygonCallback = void Function(MultiPolygon);
+
 class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
   final List<List<LatLng>> points;
   final List<List<Offset>> offsets = [];
@@ -47,8 +49,8 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
     required String id,
     required MultiPolygonBuilder builder,
     required this.points,
-    MapElementCallback<MultiPolygon>? onTap,
-    MapElementCallback<MultiPolygon>? onDrag,
+    MultiPolygonCallback? onTap,
+    MultiPolygonCallback? onDrag,
   }) : super(
           builder: builder,
           id: id,

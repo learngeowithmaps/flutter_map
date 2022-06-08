@@ -34,6 +34,8 @@ class PolygonLayerOptions extends LayerOptions<Polygon> {
   }
 }
 
+typedef PolygonCallback = void Function(Polygon);
+
 class Polygon extends MapElement<PolygonBuilder, Polygon> {
   final List<LatLng> points;
   final List<Offset> offsets = [];
@@ -46,8 +48,8 @@ class Polygon extends MapElement<PolygonBuilder, Polygon> {
     required PolygonBuilder builder,
     required this.points,
     this.holePointsList,
-    MapElementCallback<Polygon>? onTap,
-    onDrag,
+    PolygonCallback? onTap,
+    PolygonCallback? onDrag,
   })  : holeOffsetsList = null == holePointsList || holePointsList.isEmpty
             ? null
             : List.generate(holePointsList.length, (_) => []),
