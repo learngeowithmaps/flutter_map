@@ -46,7 +46,7 @@ class Polygon extends MapElement<PolygonBuilder, Polygon> {
     required PolygonBuilder builder,
     required this.points,
     this.holePointsList,
-    VoidCallback? onTap,
+    LocationCallaback? onTap,
     LocationCallaback? onDrag,
   })  : holeOffsetsList = null == holePointsList || holePointsList.isEmpty
             ? null
@@ -202,7 +202,8 @@ class _PolygonLayerState extends State<PolygonLayer> {
               });
             },
             onTapOnPolygon: (polygon) {
-              polygon.onTap?.call();
+              polygon.onTap
+                  ?.call(LatLngHelper.centerOfListOfPoints(polygon.points));
             },
             child: Stack(
               children: polygons,

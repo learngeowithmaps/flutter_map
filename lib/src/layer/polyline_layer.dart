@@ -29,6 +29,8 @@ class PolylineLayerOptions extends LayerOptions<Polyline> {
   }
 }
 
+typedef void PolylineCallback(Marker);
+
 typedef PolylineBuilder = Widget Function(
   BuildContext context,
   List<LatLng> points,
@@ -42,7 +44,7 @@ class Polyline extends MapElement<PolylineBuilder, Polyline> {
   LatLngBounds? boundingBox;
 
   Polyline({
-    ui.VoidCallback? onTap,
+    PolylineCallback? onTap,
     required String id,
     required PolylineBuilder builder,
     required this.points,

@@ -153,7 +153,7 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
     this.rotateOrigin,
     this.rotateAlignment,
     AnchorPos? anchorPos,
-    VoidCallback? onTap,
+    LocationCallaback? onTap,
     LocationCallaback? onDrag,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
@@ -293,7 +293,7 @@ class _MarkerLayerState extends State<MarkerLayer> {
                   });
                 },
                 onTap: () {
-                  marker.onTap?.call();
+                  marker.onTap?.call(marker.point);
                 },
                 child: Container(
                   color: marker == _draggingMarker ? Colors.blueGrey : null,
