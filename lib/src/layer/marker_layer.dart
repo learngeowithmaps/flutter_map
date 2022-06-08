@@ -153,8 +153,8 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
     this.rotateOrigin,
     this.rotateAlignment,
     AnchorPos? anchorPos,
-    VoidCallback? onTap,
-    LocationCallaback? onDrag,
+    MapElementCallback? onTap,
+    MapElementCallback? onDrag,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
           id: id,
@@ -293,7 +293,7 @@ class _MarkerLayerState extends State<MarkerLayer> {
                   });
                 },
                 onTap: () {
-                  marker.onTap?.call();
+                  marker.onTap?.call(marker);
                 },
                 child: Container(
                   color: marker == _draggingMarker ? Colors.blueGrey : null,
@@ -320,7 +320,7 @@ class _MarkerLayerState extends State<MarkerLayer> {
                         _draggingMarker!.copyWithNewDelta(location);
                     widget.markerLayerOptions.markers.add(_draggingMarker!);
 
-                    _draggingMarker!.onDrag?.call(location);
+                    _draggingMarker!.onDrag?.call(_draggingMarker!);
                     setState(() => _pxCache = generatePxCache());
                   }
                 }

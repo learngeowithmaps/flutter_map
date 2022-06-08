@@ -46,8 +46,8 @@ class Polygon extends MapElement<PolygonBuilder, Polygon> {
     required PolygonBuilder builder,
     required this.points,
     this.holePointsList,
-    VoidCallback? onTap,
-    LocationCallaback? onDrag,
+    MapElementCallback<Polygon>? onTap,
+    onDrag,
   })  : holeOffsetsList = null == holePointsList || holePointsList.isEmpty
             ? null
             : List.generate(holePointsList.length, (_) => []),
@@ -181,7 +181,7 @@ class _PolygonLayerState extends State<PolygonLayer> {
                         _draggingPolygon!.copyWithNewPoint(location);
                     widget.polygonOpts.polygons.add(_draggingPolygon!);
 
-                    _draggingPolygon!.onDrag?.call(location);
+                    _draggingPolygon!.onDrag?.call(_draggingPolygon!);
                     setState(() {});
                   }
                 }
@@ -202,7 +202,7 @@ class _PolygonLayerState extends State<PolygonLayer> {
               });
             },
             onTapOnPolygon: (polygon) {
-              polygon.onTap?.call();
+              polygon.onTap?.call(polygon);
             },
             child: Stack(
               children: polygons,

@@ -47,8 +47,8 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
     required String id,
     required MultiPolygonBuilder builder,
     required this.points,
-    VoidCallback? onTap,
-    LocationCallaback? onDrag,
+    MapElementCallback? onTap,
+    MapElementCallback? onDrag,
   }) : super(
           builder: builder,
           id: id,
@@ -158,7 +158,7 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
                         _draggingPolygon!.copyWithNewDelta(delta);
                     widget.polygonOpts.polygons.add(_draggingPolygon!);
 
-                    _draggingPolygon!.onDrag?.call(location);
+                    _draggingPolygon!.onDrag?.call(_draggingPolygon!);
                     setState(() {});
                   }
                 }
@@ -185,7 +185,7 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
               });
             },
             onTapOnPolygon: (polygon) {
-              polygon.onTap?.call();
+              polygon.onTap?.call(polygon);
             },
             child: Stack(
               children: polygons,

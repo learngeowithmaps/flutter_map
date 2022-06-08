@@ -19,12 +19,7 @@ class TapToAddPageState extends State<TapToAddPage> {
   @override
   Widget build(BuildContext context) {
     var markers = tappedPoints.map((latlng) {
-      return Marker(
-        id: "1",
-        point: latlng,
-        builder: (ctx) =>
-            MarkerWidget.text(text: "twotwotwotwotwotwotwotwotwotwotwo"),
-      );
+      return Marker(id: "1", point: latlng, builder: (ctx) => SizedBox());
     }).toList();
 
     return Scaffold(
