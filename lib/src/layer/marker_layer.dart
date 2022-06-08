@@ -153,8 +153,8 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
     this.rotateOrigin,
     this.rotateAlignment,
     AnchorPos? anchorPos,
-    MapElementCallback? onTap,
-    MapElementCallback? onDrag,
+    MapElementCallback<MultiPolygon>? onTap,
+    MapElementCallback<MultiPolygon>? onDrag,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
           id: id,
