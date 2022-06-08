@@ -49,11 +49,7 @@ extension LatLngHelper on LatLng {
 
 abstract class MapElement<T, W> {
   ///used in comparing
-<<<<<<< HEAD
   final MapElementCallback<W>? onTap, onDrag;
-=======
-  final LocationCallaback? onTap, onDrag;
->>>>>>> 61b6beddf6a370f9c4e0e44ea01256fba2088583
   final String id;
   final T builder;
 

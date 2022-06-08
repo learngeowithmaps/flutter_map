@@ -47,13 +47,8 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
     required String id,
     required MultiPolygonBuilder builder,
     required this.points,
-<<<<<<< HEAD
     MapElementCallback? onTap,
     MapElementCallback? onDrag,
-=======
-    LocationCallaback? onTap,
-    LocationCallaback? onDrag,
->>>>>>> 61b6beddf6a370f9c4e0e44ea01256fba2088583
   }) : super(
           builder: builder,
           id: id,
@@ -190,17 +185,7 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
               });
             },
             onTapOnPolygon: (polygon) {
-<<<<<<< HEAD
               polygon.onTap?.call(polygon);
-=======
-              polygon.onTap?.call(
-                LatLngHelper.centerOfListOfPoints(
-                  [
-                    for (var item in polygon.points) ...item,
-                  ],
-                ),
-              );
->>>>>>> 61b6beddf6a370f9c4e0e44ea01256fba2088583
             },
             child: Stack(
               children: polygons,
