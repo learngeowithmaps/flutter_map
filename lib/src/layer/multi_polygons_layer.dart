@@ -72,6 +72,8 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
       points: newPoints,
       id: id,
       builder: builder,
+      onDrag: onDrag,
+      onTap: onTap,
     );
   }
 }

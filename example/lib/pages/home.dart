@@ -11,6 +11,8 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     var polygons = <MultiPolygon>[
       MultiPolygon(
+        onDrag: (_) {},
+        onTap: (_) {},
         id: "6",
         points: [
           [LatLng(51.5, -0.09), LatLng(56.5, -2.09), LatLng(59.5, -5.09)],
@@ -28,6 +30,8 @@ class HomePage extends StatelessWidget {
         },
       ),
       MultiPolygon(
+        onDrag: (_) {},
+        onTap: (_) {},
         id: "7",
         points: [
           [LatLng(41.5, -0.09), LatLng(46.5, -2.09), LatLng(49.5, -5.09)],

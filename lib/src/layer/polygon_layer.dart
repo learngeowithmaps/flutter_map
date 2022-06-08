@@ -73,6 +73,8 @@ class Polygon extends MapElement<PolygonBuilder, Polygon> {
       holePointsList: holePointsList,
       id: id,
       builder: builder,
+      onDrag: onDrag,
+      onTap: onTap,
     );
   }
 

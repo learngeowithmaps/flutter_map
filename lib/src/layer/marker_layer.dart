@@ -174,6 +174,8 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
       rotateAlignment: rotateAlignment,
       rotateOrigin: rotateOrigin,
       id: id,
+      onDrag: onDrag,
+      onTap: onTap,
     );
   }
 }
