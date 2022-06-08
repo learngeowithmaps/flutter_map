@@ -47,8 +47,8 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
     required String id,
     required MultiPolygonBuilder builder,
     required this.points,
-    MapElementCallback? onTap,
-    MapElementCallback? onDrag,
+    MapElementCallback<MultiPolygon>? onTap,
+    MapElementCallback<MultiPolygon>? onDrag,
   }) : super(
           builder: builder,
           id: id,
