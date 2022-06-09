@@ -23,8 +23,8 @@ extension LatLngHelper on LatLng {
   LatLng difference(LatLng other, {bool remainder = true}) {
     if (!remainder) {
       return LatLng(
-        (other.latitude - latitude),
-        (other.longitude - longitude),
+        (latitude - other.latitude),
+        (longitude - other.longitude),
       );
     }
     return LatLng(

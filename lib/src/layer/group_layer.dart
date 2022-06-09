@@ -58,11 +58,17 @@ class GroupLayer extends StatelessWidget {
     if (options is MarkerLayerOptions) {
       return MarkerLayer(options, map, options.rebuild);
     }
+    if (options is MultiMarkerLayerOptions) {
+      return MultiMarkerLayer(options, map, options.rebuild);
+    }
     if (options is CircleLayerOptions) {
       return CircleLayer(options, map, options.rebuild);
     }
     if (options is PolylineLayerOptions) {
       return PolylineLayer(options, map, options.rebuild);
+    }
+    if (options is MultiPolylineLayerOptions) {
+      return MultiPolylineLayer(options, map, options.rebuild);
     }
     if (options is MultiPolygonLayerOptions) {
       return MultiPolygonLayer(options, map, options.rebuild);

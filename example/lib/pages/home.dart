@@ -49,23 +49,17 @@ class HomePage extends StatelessWidget {
         },
       ),
     ];
-    var markers = <Marker>[
-      Marker(
+    var markers = <MultiMarker>[
+      MultiMarker(
         id: "2",
         width: 80.0,
         height: 80.0,
-        point: LatLng(53.3498, -6.2603),
+        points: [
+          LatLng(53.3498, -6.2603),
+          LatLng(48.8566, 2.3522),
+        ],
         builder: (ctx) => Container(
           child: Text("two"),
-        ),
-      ),
-      Marker(
-        id: "3",
-        width: 80.0,
-        height: 80.0,
-        point: LatLng(48.8566, 2.3522),
-        builder: (ctx) => Container(
-          child: Text("three"),
         ),
       ),
     ];
@@ -100,8 +94,8 @@ class HomePage extends StatelessWidget {
                   MultiPolygonLayerOptions(
                     polygons: polygons,
                   ),
-                  MarkerLayerOptions(
-                    markers: markers,
+                  MultiMarkerLayerOptions(
+                    multiMarkers: markers,
                   ),
                 ],
               ),

@@ -146,7 +146,8 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
         return Listener(
           onPointerMove: widget.polygonOpts.handlingTouch
               ? (details) {
-                  if (_draggingPolygon != null) {
+                  if (_draggingPolygon != null &&
+                      _draggingPolygon!.onDrag != null) {
                     final location = widget.map.offsetToLatLng(
                       details.localPosition,
                       context.size!.width,
@@ -278,7 +279,7 @@ class _MultiPolygonGestureDetectorState
       context.size!.height,
     );
     for (var p in widget.polygons) {
-      if (p.onDrag != null &&
+      if (p.onTap != null &&
           p.points.any((points) =>
               PolygonUtil.containsLocation(location, points, true))) {
         return p;

@@ -9,16 +9,17 @@ class PolylinePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var points = <LatLng>[
-      LatLng(51.5, -0.09),
-      LatLng(53.3498, -6.2603),
-      LatLng(48.8566, 2.3522),
-    ];
-
-    var pointsGradient = <LatLng>[
-      LatLng(55.5, -0.09),
-      LatLng(54.3498, -6.2603),
-      LatLng(52.8566, 2.3522),
+    var points = <List<LatLng>>[
+      [
+        LatLng(51.5, -0.09),
+        LatLng(53.3498, -6.2603),
+        LatLng(48.8566, 2.3522),
+      ],
+      [
+        LatLng(52.5, -1.09),
+        LatLng(54.3498, -5.2603),
+        LatLng(49.8566, 1.3522),
+      ],
     ];
 
     return Scaffold(
@@ -43,38 +44,20 @@ class PolylinePage extends StatelessWidget {
                       urlTemplate:
                           'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                       subdomains: ['a', 'b', 'c']),
-                  PolylineLayerOptions(
-                    polylines: [
-                      Polyline(
+                  MultiPolylineLayerOptions(
+                    multiPolylines: [
+                      MultiPolyline(
                         id: "4",
                         points: points,
-                        builder: (context, points, offsets, boundingBox) {
-                          return PolylineWidget(
-                            points: points,
-                            offsets: offsets,
-                            boundingBox: boundingBox,
-                            strokeWidth: 4.0,
-                          );
+                        onTap: (_) {
+                          print("YASS");
                         },
-                      ),
-                    ],
-                  ),
-                  PolylineLayerOptions(
-                    polylines: [
-                      Polyline(
-                        id: "4",
-                        points: pointsGradient,
                         builder: (context, points, offsets, boundingBox) {
-                          return PolylineWidget(
+                          return MultiPolylineWidget(
                             points: points,
                             offsets: offsets,
                             boundingBox: boundingBox,
                             strokeWidth: 4.0,
-                            gradientColors: [
-                              Color(0xffE40203),
-                              Color(0xffFEED00),
-                              Color(0xff007E2D),
-                            ],
                           );
                         },
                       ),
