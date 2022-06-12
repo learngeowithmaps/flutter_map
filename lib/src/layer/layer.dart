@@ -16,9 +16,8 @@ typedef void LayerElementDragCallback<T>(
 abstract class LayerOptions<LayerElementType> {
   final Key? key;
   final Stream<Null>? rebuild;
-  final LayerElementDragCallback<LayerElementType>? onLayerElementDrag;
 
-  LayerOptions({required this.onLayerElementDrag, this.key, this.rebuild});
+  LayerOptions({this.key, this.rebuild});
 
   bool handlingTouch = false;
 }

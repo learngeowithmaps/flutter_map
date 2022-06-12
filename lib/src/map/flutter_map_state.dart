@@ -223,19 +223,22 @@ class FlutterMapState extends MapGestureMixin {
     }
     if (options is TileLayerOptions) {
       return TileLayer(
-          options: options, mapState: mapState, stream: _merge(options));
+        options: options,
+        mapState: mapState,
+        stream: _merge(options),
+      );
     }
     if (options is MarkerLayerOptions) {
       return MarkerLayer(options, mapState, _merge(options));
     }
     if (options is MultiMarkerLayerOptions) {
-      return MultiMarkerLayer(options, mapState, options.rebuild);
+      return MultiMarkerLayer(options, mapState, _merge(options));
     }
     if (options is PolylineLayerOptions) {
       return PolylineLayer(options, mapState, _merge(options));
     }
     if (options is MultiPolylineLayerOptions) {
-      return MultiPolylineLayer(options, mapState, options.rebuild);
+      return MultiPolylineLayer(options, mapState, _merge(options));
     }
     if (options is MultiPolygonLayerOptions) {
       return MultiPolygonLayer(options, mapState, _merge(options));

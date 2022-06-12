@@ -43,7 +43,6 @@ class MultiMarkerLayerOptions extends LayerOptions<MultiMarker> {
   }) : super(
           key: key,
           rebuild: rebuild,
-          onLayerElementDrag: onLayerElementDrag,
         );
 
   @override

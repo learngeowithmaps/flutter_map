@@ -19,7 +19,6 @@ class PolylineLayerOptions extends LayerOptions<Polyline> {
   }) : super(
           key: key,
           rebuild: rebuild,
-          onLayerElementDrag: null,
         ) {
     if (polylineCulling) {
       for (var polyline in polylines) {

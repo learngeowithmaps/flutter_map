@@ -54,6 +54,7 @@ class HomePage extends StatelessWidget {
         id: "2",
         width: 80.0,
         height: 80.0,
+        onDrag: (_) {},
         points: [
           LatLng(53.3498, -6.2603),
           LatLng(48.8566, 2.3522),

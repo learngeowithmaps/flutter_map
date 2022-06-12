@@ -44,7 +44,6 @@ class MarkerLayerOptions extends LayerOptions<Marker> {
   }) : super(
           key: key,
           rebuild: rebuild,
-          onLayerElementDrag: onLayerElementDrag,
         );
 
   @override

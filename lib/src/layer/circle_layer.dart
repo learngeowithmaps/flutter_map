@@ -14,7 +14,6 @@ class CircleLayerOptions extends LayerOptions {
   }) : super(
           key: key,
           rebuild: rebuild,
-          onLayerElementDrag: null,
         );
 }
 

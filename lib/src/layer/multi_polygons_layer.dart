@@ -24,7 +24,6 @@ class MultiPolygonLayerOptions extends LayerOptions<MultiPolygon> {
   }) : super(
           key: key,
           rebuild: rebuild,
-          onLayerElementDrag: null,
         ) {
     if (polygonCulling) {
       for (var polygon in polygons) {

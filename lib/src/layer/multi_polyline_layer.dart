@@ -2,10 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
-import 'package:flutter_map/src/helpers/helpers.dart';
-import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart';
 
 class MultiPolylineLayerOptions extends LayerOptions<MultiPolyline> {
@@ -20,7 +17,6 @@ class MultiPolylineLayerOptions extends LayerOptions<MultiPolyline> {
   }) : super(
           key: key,
           rebuild: rebuild,
-          onLayerElementDrag: null,
         ) {
     if (polylineCulling) {
       for (var polyline in multiPolylines) {

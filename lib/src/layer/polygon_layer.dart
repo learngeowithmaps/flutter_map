@@ -24,7 +24,6 @@ class PolygonLayerOptions extends LayerOptions<Polygon> {
   }) : super(
           key: key,
           rebuild: rebuild,
-          onLayerElementDrag: null,
         ) {
     if (polygonCulling) {
       for (var polygon in polygons) {
