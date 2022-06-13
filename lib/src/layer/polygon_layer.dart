@@ -172,7 +172,8 @@ class _PolygonLayerState extends State<PolygonLayer> {
         return Listener(
           onPointerMove: widget.polygonOpts.handlingTouch
               ? (details) {
-                  if (_draggingPolygon != null) {
+                  if (_draggingPolygon != null &&
+                      _draggingPolygon!.onDrag != null) {
                     final location = widget.map.offsetToLatLng(
                       details.localPosition,
                       context.size!.width,
@@ -284,7 +285,7 @@ class _PolygonGestureDetectorState extends State<PolygonGestureDetector> {
       context.size!.height,
     );
     for (var p in widget.polygons) {
-      if (p.onDrag != null &&
+      if ((p.onDrag != null || p.onTap != null) &&
           PolygonUtil.containsLocation(location, p.points, true)) {
         return p;
       }

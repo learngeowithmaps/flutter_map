@@ -310,7 +310,8 @@ class _MarkerLayerState extends State<MarkerLayer> {
           behavior: HitTestBehavior.translucent,
           onPointerMove: widget.markerLayerOptions.handlingTouch
               ? (details) {
-                  if (_draggingMarker != null) {
+                  if (_draggingMarker != null &&
+                      _draggingMarker!.onDrag != null) {
                     final location = widget.map.offsetToLatLng(
                       details.localPosition,
                       context.size!.width,
