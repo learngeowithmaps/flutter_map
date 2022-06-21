@@ -71,6 +71,7 @@ class TestApp extends StatefulWidget {
 class _TestAppState extends State<TestApp> {
   final List<Marker> _markers = <Marker>[
     Marker(
+      id: "1",
       width: 80.0,
       height: 80.0,
       point: LatLng(45.5231, -122.6765),
@@ -79,6 +80,7 @@ class _TestAppState extends State<TestApp> {
       ),
     ),
     Marker(
+      id: "2",
       width: 80.0,
       height: 80.0,
       point: LatLng(40, -120), // not visible

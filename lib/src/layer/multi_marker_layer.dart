@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/core/bounds.dart';
+import 'package:flutter_map/src/helpers/gesture.dart';
 import 'package:flutter_map/src/helpers/helpers.dart';
 import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart';
+
+import '../../plugin_api.dart';
 
 class MultiMarkerLayerOptions extends LayerOptions<MultiMarker> {
   final List<MultiMarker> multiMarkers;
@@ -100,6 +103,12 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
           onDrag: onDrag,
           onTap: onTap,
         );
+
+  CustomPoint sw(CustomPoint pxPoint) => CustomPoint(
+      pxPoint.x + (width - anchor.left), pxPoint.y - (height - anchor.top));
+  CustomPoint ne(CustomPoint pxPoint) => CustomPoint(
+      pxPoint.x - (width - anchor.left), pxPoint.y + (height - anchor.top));
+
   @override
   MultiMarker copyWithNewDelta(LatLng point) {
     return MultiMarker(
@@ -154,15 +163,55 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
   /// Should be discarded when zoom changes
   // Has a fixed length of markerOpts.multiMarkers.length - better performance:
   // https://stackoverflow.com/questions/15943890/is-there-a-performance-benefit-in-using-fixed-length-lists-in-dart
-  List<List<CustomPoint>> _pxCache = [];
+  Map<MultiMarker, List<CustomPoint>> _pxCache = {};
+  Map<MultiMarker, List<List<LatLng>>> _boundsCache = {};
 
   // Calling this every time markerOpts change should guarantee proper length
-  void generatePxCache() {
-    _pxCache = List.generate(
-        widget.markerLayerOptions.multiMarkers.length,
-        (i) => widget.markerLayerOptions.multiMarkers[i].points
-            .map(widget.map.project)
-            .toList());
+  void generatePxCache([MultiMarker? multiMarker]) {
+    final genBounds =
+        (MultiMarker multiMarker, List<CustomPoint<num>> pxPoints) {
+      final width = multiMarker.width - multiMarker.anchor.left;
+      final height = multiMarker.height - multiMarker.anchor.top;
+      return pxPoints.map((pxPoint) {
+        var sw = CustomPoint(pxPoint.x + width, pxPoint.y - height);
+        var ne = CustomPoint(pxPoint.x - width, pxPoint.y + height);
+        final swll = widget.map.unproject(sw);
+        final nell = widget.map.unproject(ne);
+        return [
+          swll,
+          LatLng(
+            nell.latitude,
+            swll.longitude,
+          ),
+          nell,
+          LatLng(
+            swll.latitude,
+            nell.longitude,
+          ),
+          swll,
+        ];
+      }).toList();
+    };
+    if (multiMarker != null) {
+      final pxPoints = _pxCache.update(multiMarker,
+          (value) => multiMarker.points.map(widget.map.project).toList(),
+          ifAbsent: () => multiMarker.points.map(widget.map.project).toList());
+
+      _boundsCache.update(
+        multiMarker,
+        (_) {
+          return genBounds(multiMarker, pxPoints);
+        },
+        ifAbsent: () {
+          return genBounds(multiMarker, pxPoints);
+        },
+      );
+    } else {
+      _pxCache = Map.fromEntries(widget.markerLayerOptions.multiMarkers
+          .map((i) => MapEntry(i, i.points.map(widget.map.project).toList())));
+      _boundsCache = _pxCache.map((multiMarker, pxCache) =>
+          MapEntry(multiMarker, genBounds(multiMarker, pxCache)));
+    }
   }
 
   @override
@@ -187,17 +236,15 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
       builder: (BuildContext context, AsyncSnapshot<int?> snapshot) {
         var multiMarkers = <Widget>[];
         final sameZoom = widget.map.zoom == lastZoom;
-        for (var i = 0;
-            i < widget.markerLayerOptions.multiMarkers.length;
-            i++,) {
-          var marker = widget.markerLayerOptions.multiMarkers[i];
+        for (var marker in widget.markerLayerOptions.multiMarkers) {
           for (var j = 0; j < marker.points.length; j++) {
             // Decide whether to use cached point or calculate it
-            var pxPoint = sameZoom
-                ? _pxCache[i][j]
+            final useCache = _draggingMultiMarker == marker ? false : sameZoom;
+            var pxPoint = useCache
+                ? _pxCache[marker]![j]
                 : widget.map.project(marker.points[j]);
-            if (!sameZoom) {
-              _pxCache[i][j] = pxPoint;
+            if (!useCache) {
+              _pxCache[marker]![j] = pxPoint;
             }
 
             final width = marker.width - marker.anchor.left;
@@ -230,65 +277,79 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
                 height: marker.height,
                 left: pos.x - width,
                 top: pos.y - height,
-                child: GestureDetector(
-                  onTapDown: (details) {
-                    setState(() {
-                      widget.markerLayerOptions.handlingTouch = true;
-                      _draggingMultiMarker = marker;
-                      _lastDragPoint = widget.map.offsetToLatLng(
-                        details.globalPosition,
-                        context.size!.width,
-                        context.size!.height,
-                      );
-                    });
-                  },
-                  onTap: () {
-                    marker.onTap?.call(marker);
-                  },
-                  child: Container(
-                    color:
-                        marker == _draggingMultiMarker ? Colors.blueGrey : null,
-                    child: markerWidget,
-                  ),
+                child: Container(
+                  color:
+                      marker == _draggingMultiMarker ? Colors.blueGrey : null,
+                  child: markerWidget,
                 ),
               ),
             );
           }
         }
         lastZoom = widget.map.zoom;
-        return Listener(
-          behavior: HitTestBehavior.translucent,
-          onPointerMove: widget.markerLayerOptions.handlingTouch
-              ? (details) {
-                  if (_draggingMultiMarker != null &&
-                      _draggingMultiMarker!.onDrag != null) {
-                    final location = widget.map.offsetToLatLng(
-                      details.position,
-                      context.size!.width,
-                      context.size!.height,
-                    );
+        return FlutterMapLayerGestureListener(
+          onDragStart: (details) {
+            _draggingMultiMarker = _tapped(
+              details.localFocalPoint,
+              context,
+              false,
+            );
 
-                    final delta = _lastDragPoint!.difference(location);
-                    _lastDragPoint = location;
+            if (_draggingMultiMarker == null) {
+              return false;
+            } else {
+              setState(() {});
+              return true;
+            }
+          },
+          onDragUpdate: (details) {
+            if (_draggingMultiMarker == null) {
+              return false;
+            }
+            final location = widget.map.offsetToLatLng(
+              details.localFocalPoint - details.focalPointDelta,
+              context.size!.width,
+              context.size!.height,
+            );
+            final location2 = widget.map.offsetToLatLng(
+              details.localFocalPoint,
+              context.size!.width,
+              context.size!.height,
+            );
+            final delta = location.difference(location2);
 
-                    widget.markerLayerOptions.multiMarkers
-                        .remove(_draggingMultiMarker!);
-                    _draggingMultiMarker =
-                        _draggingMultiMarker!.copyWithNewDelta(delta);
-                    widget.markerLayerOptions.multiMarkers
-                        .add(_draggingMultiMarker!);
+            final done = widget.markerLayerOptions.multiMarkers
+                .remove(_draggingMultiMarker!);
+            _draggingMultiMarker =
+                _draggingMultiMarker!.copyWithNewDelta(delta);
+            widget.markerLayerOptions.multiMarkers.add(_draggingMultiMarker!);
 
-                    _draggingMultiMarker!.onDrag?.call(_draggingMultiMarker!);
-                    setState(generatePxCache);
-                  }
-                }
-              : null,
-          onPointerUp: (_) {
-            setState(() {
-              widget.markerLayerOptions.handlingTouch = false;
-              _draggingMultiMarker = null;
-              _lastDragPoint = null;
-            });
+            _draggingMultiMarker!.onDrag?.call(_draggingMultiMarker!);
+            setState(generatePxCache);
+            return true;
+          },
+          onDragEnd: (details) {
+            if (_draggingMultiMarker == null) {
+              return false;
+            } else {
+              setState(() {
+                _draggingMultiMarker = null;
+              });
+              return true;
+            }
+          },
+          onTap: (details) {
+            final tapped = _tapped(
+              details.localPosition,
+              context,
+              true,
+            );
+            if (tapped == null) {
+              return false;
+            } else {
+              tapped.onTap!.call(tapped);
+              return true;
+            }
           },
           child: Container(
             child: Stack(
@@ -298,5 +359,23 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
         );
       },
     );
+  }
+
+  MultiMarker? _tapped(Offset offset, BuildContext context, bool forTap) {
+    final location = widget.map.offsetToLatLng(
+      offset,
+      context.size!.width,
+      context.size!.height,
+    );
+    for (var marker in _boundsCache.keys) {
+      final valid = forTap ? marker.onTap != null : marker.onDrag != null;
+      final allBounds = _boundsCache[marker]!;
+      for (var bounds in allBounds) {
+        if (valid && PolygonUtil.containsLocation(location, bounds, true)) {
+          return marker;
+        }
+      }
+    }
+    return null;
   }
 }

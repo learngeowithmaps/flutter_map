@@ -170,7 +170,7 @@ class _PolygonLayerState extends State<PolygonLayer> {
         }
 
         return Listener(
-          onPointerMove: widget.polygonOpts.handlingTouch
+          onPointerMove: true
               ? (details) {
                   if (_draggingPolygon != null &&
                       _draggingPolygon!.onDrag != null) {
@@ -192,7 +192,7 @@ class _PolygonLayerState extends State<PolygonLayer> {
               : null,
           onPointerUp: (_) {
             setState(() {
-              widget.polygonOpts.handlingTouch = false;
+              //widget.polygonOpts.handlingTouch = false;
               _draggingPolygon = null;
             });
           },
@@ -201,7 +201,7 @@ class _PolygonLayerState extends State<PolygonLayer> {
             polygons: widget.polygonOpts.polygons,
             onTapDownOnPolygon: (polygon) {
               setState(() {
-                widget.polygonOpts.handlingTouch = true;
+                //widget.polygonOpts.handlingTouch = true;
                 _draggingPolygon = polygon;
               });
             },

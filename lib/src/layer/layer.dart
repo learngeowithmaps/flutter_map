@@ -18,6 +18,4 @@ abstract class LayerOptions<LayerElementType> {
   final Stream<Null>? rebuild;
 
   LayerOptions({this.key, this.rebuild});
-
-  bool handlingTouch = false;
 }

@@ -4,6 +4,7 @@ import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/gestures/gestures.dart';
+import 'package:flutter_map/src/helpers/gesture.dart';
 import 'package:flutter_map/src/layer/group_layer.dart';
 import 'package:flutter_map/src/layer/overlay_image_layer.dart';
 import 'package:flutter_map/src/map/map.dart';
@@ -78,10 +79,6 @@ class FlutterMapState extends MapGestureMixin {
     return group.stream;
   }
 
-  bool get _noGestures {
-    return widget.layers.any((element) => element.handlingTouch);
-  }
-
   @override
   Widget build(BuildContext context) {
     _disposeStreamGroups();
@@ -92,122 +89,68 @@ class FlutterMapState extends MapGestureMixin {
 
       return MapStateInheritedWidget(
         mapState: mapState,
-        child: Listener(
-          onPointerDown: (event) {
-            if (_noGestures) {
-              return;
-            }
-            savePointer(event);
+        child: FlutterMapMasterGestureDetector(
+          onLongPress: (event) {
+            handleLongPress(TapPosition(
+              event.globalPosition,
+              event.localPosition,
+            ));
           },
-          onPointerCancel: (event) {
-            if (_noGestures) {
-              return;
-            }
-            removePointer(event);
+          onDoubleTap: (event) {
+            handleDoubleTap(TapPosition(
+              event.globalPosition,
+              event.localPosition,
+            ));
           },
-          onPointerUp: (event) {
-            if (_noGestures) {
-              return;
-            }
-            removePointer(event);
+          onScaleStart: handleScaleStart,
+          onScaleUpdate: handleScaleUpdate,
+          onScaleEnd: handleScaleEnd,
+          onTap: (event) {
+            handleTap(TapPosition(
+              event.globalPosition,
+              event.localPosition,
+            ));
           },
-          child: PositionedTapDetector2(
-            controller: _positionedTapController,
-            onTap: (event) {
-              if (_noGestures) {
-                return;
-              }
-              handleTap(event);
-            },
-            onLongPress: (event) {
-              if (_noGestures) {
-                return;
-              }
-              handleLongPress(event);
-            },
-            onDoubleTap: (event) {
-              if (_noGestures) {
-                return;
-              }
-              handleLongPress(event);
-            },
-            child: GestureDetector(
-              onScaleStart: (event) {
-                if (_noGestures) {
-                  return;
-                }
-                handleScaleStart(event);
-              },
-              onScaleUpdate: (event) {
-                if (_noGestures) {
-                  return;
-                }
-                handleScaleUpdate(event);
-              },
-              onScaleEnd: (event) {
-                if (_noGestures) {
-                  return;
-                }
-                handleScaleEnd(event);
-              },
-              onTap: () {
-                if (_noGestures) {
-                  return;
-                }
-                _positionedTapController.onTap();
-              },
-              onLongPress: () {
-                if (_noGestures) {
-                  return;
-                }
-                _positionedTapController.onLongPress();
-              },
-              onTapDown: (event) {
-                if (_noGestures) {
-                  return;
-                }
-                _positionedTapController.onTapDown(event);
-              },
-              onTapUp: (event) {
-                if (_noGestures) {
-                  return;
-                }
-                handleOnTapUp(event);
-              },
-              child: ClipRect(
-                child: Stack(
-                  children: [
-                    OverflowBox(
-                      minWidth: size.x as double?,
-                      maxWidth: size.x as double?,
-                      minHeight: size.y as double?,
-                      maxHeight: size.y as double?,
-                      child: Transform.rotate(
-                        angle: mapState.rotationRad,
-                        child: Stack(
-                          children: [
-                            if (widget.children.isNotEmpty) ...widget.children,
-                            if (widget.layers.isNotEmpty)
-                              ...widget.layers.map(
-                                (layer) => _createLayer(layer, options.plugins),
-                              )
-                          ],
-                        ),
-                      ),
-                    ),
-                    Stack(
+          onTapDown: (event) {
+            savePointer();
+          },
+          onTapUp: (event) {
+            handleOnTapUp(event);
+            removePointer();
+          },
+          onTapCancel: removePointer,
+          child: ClipRect(
+            child: Stack(
+              children: [
+                OverflowBox(
+                  minWidth: size.x as double?,
+                  maxWidth: size.x as double?,
+                  minHeight: size.y as double?,
+                  maxHeight: size.y as double?,
+                  child: Transform.rotate(
+                    angle: mapState.rotationRad,
+                    child: Stack(
                       children: [
-                        if (widget.nonRotatedChildren.isNotEmpty)
-                          ...widget.nonRotatedChildren,
-                        if (widget.nonRotatedLayers.isNotEmpty)
-                          ...widget.nonRotatedLayers.map(
+                        if (widget.children.isNotEmpty) ...widget.children,
+                        if (widget.layers.isNotEmpty)
+                          ...widget.layers.map(
                             (layer) => _createLayer(layer, options.plugins),
                           )
                       ],
                     ),
+                  ),
+                ),
+                Stack(
+                  children: [
+                    if (widget.nonRotatedChildren.isNotEmpty)
+                      ...widget.nonRotatedChildren,
+                    if (widget.nonRotatedLayers.isNotEmpty)
+                      ...widget.nonRotatedLayers.map(
+                        (layer) => _createLayer(layer, options.plugins),
+                      )
                   ],
                 ),
-              ),
+              ],
             ),
           ),
         ),

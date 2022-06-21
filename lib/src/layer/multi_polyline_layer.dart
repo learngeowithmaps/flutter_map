@@ -131,63 +131,46 @@ class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
           );
         }
 
-        return Listener(
-          onPointerMove: widget.polylineOpts.handlingTouch
-              ? (details) {
-                  if (_draggingPolyline != null &&
-                      _draggingPolyline!.onDrag != null) {
-                    final location = widget.map.offsetToLatLng(
-                      details.localPosition,
-                      context.size!.width,
-                      context.size!.height,
-                    );
-
-                    final delta = _lastDragPoint!.difference(location);
-                    _lastDragPoint = location;
-
-                    widget.polylineOpts.multiPolylines
-                        .remove(_draggingPolyline!);
-
-                    _draggingPolyline =
-                        _draggingPolyline!.copyWithNewDelta(delta);
-                    widget.polylineOpts.multiPolylines.add(_draggingPolyline!);
-
-                    _draggingPolyline!.onDrag?.call(_draggingPolyline!);
-                    setState(() {});
-                  }
-                }
-              : null,
-          onPointerUp: (_) {
-            setState(() {
-              widget.polylineOpts.handlingTouch = false;
-              _draggingPolyline = null;
-              _lastDragPoint = null;
-            });
+        return FlutterMapLayerGestureListener(
+          onTap: (details) {
+            final tapped = _tapped(
+              details.localPosition,
+              context,
+              true,
+            );
+            if (tapped == null) {
+              return false;
+            }
+            tapped.onTap!.call(tapped);
+            return true;
           },
-          child: MultiPolylineGestureDetector(
-            mapState: widget.map,
-            polygons: widget.polylineOpts.multiPolylines,
-            onTapDownOnPolygon: (polyline, details) {
-              setState(() {
-                widget.polylineOpts.handlingTouch = true;
-                _draggingPolyline = polyline;
-                _lastDragPoint = widget.map.offsetToLatLng(
-                  details.localPosition,
-                  context.size!.width,
-                  context.size!.height,
-                );
-              });
-            },
-            onTapOnPolygon: (polyline) {
-              polyline.onTap?.call(polyline);
-            },
-            child: Stack(
-              children: multiPolylines,
-            ),
+          child: Stack(
+            children: multiPolylines,
           ),
         );
       },
     );
+  }
+
+  MultiPolyline? _tapped(Offset offset, BuildContext context, bool forTap) {
+    final location = widget.map.offsetToLatLng(
+      offset,
+      context.size!.width,
+      context.size!.height,
+    );
+    for (var p in widget.polylineOpts.multiPolylines) {
+      final valid = forTap ? p.onTap != null : p.onDrag != null;
+      if (valid &&
+          p.points.any(
+            (points) => PolygonUtil.isLocationOnPath(location, points, true,
+                tolerance: 50000 * (1 / widget.map.zoom)),
+          )) {
+        if ((p.onDrag != null || p.onTap != null)) {
+          return p;
+        }
+      }
+    }
+    return null;
   }
 
   void _fillOffsets(
@@ -413,74 +396,4 @@ double _dist2(Offset v, Offset w) {
 
 double _sqr(double x) {
   return x * x;
-}
-
-class MultiPolylineGestureDetector extends StatefulWidget {
-  final List<MultiPolyline> polygons;
-  final MapState mapState;
-  final Widget child;
-  final Function(MultiPolyline, TapDownDetails) onTapDownOnPolygon;
-  final Function(MultiPolyline) onTapOnPolygon;
-  const MultiPolylineGestureDetector({
-    Key? key,
-    required this.polygons,
-    required this.mapState,
-    required this.child,
-    required this.onTapDownOnPolygon,
-    required this.onTapOnPolygon,
-  }) : super(key: key);
-
-  @override
-  State<MultiPolylineGestureDetector> createState() =>
-      _MultiPolylineGestureDetectorState();
-}
-
-class _MultiPolylineGestureDetectorState
-    extends State<MultiPolylineGestureDetector> {
-  Offset? _lastOffset;
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      child: widget.child,
-      onTapDown: (details) {
-        final p = _tapped(details.localPosition, context);
-        if (p != null) {
-          widget.onTapDownOnPolygon(p, details);
-          _lastOffset = details.localPosition;
-        } else {
-          _lastOffset = null;
-        }
-      },
-      onTapUp: (details) {
-        if (_lastOffset == details.localPosition) {
-          final p = _tapped(details.localPosition, context);
-          if (p != null) {
-            widget.onTapOnPolygon(p);
-          }
-        }
-      },
-    );
-  }
-
-  MultiPolyline? _tapped(Offset offset, BuildContext context) {
-    final location = widget.mapState.offsetToLatLng(
-      offset,
-      context.size!.width,
-      context.size!.height,
-    );
-    for (var p in widget.polygons) {
-      if ((p.onDrag != null || p.onTap != null) &&
-          p.points.any(
-            (points) => PolygonUtil.isLocationOnPath(
-              location,
-              points,
-              true,
-              tolerance: 10000 * widget.mapState.zoom,
-            ),
-          )) {
-        return p;
-      }
-    }
-    return null;
-  }
 }

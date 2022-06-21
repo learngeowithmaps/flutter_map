@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map/src/core/bounds.dart';
 import 'package:flutter_map/src/helpers/helpers.dart';
 import 'package:flutter_map/src/map/map.dart';
@@ -290,7 +291,6 @@ class _MarkerLayerState extends State<MarkerLayer> {
               child: GestureDetector(
                 onTapDown: (deets) {
                   setState(() {
-                    widget.markerLayerOptions.handlingTouch = true;
                     _draggingMarker = marker;
                   });
                 },
@@ -306,34 +306,35 @@ class _MarkerLayerState extends State<MarkerLayer> {
           );
         }
         lastZoom = widget.map.zoom;
-        return Listener(
-          behavior: HitTestBehavior.translucent,
-          onPointerMove: widget.markerLayerOptions.handlingTouch
+        return FlutterMapLayerGestureListener(
+          onDragStart: (details) {
+            return _draggingMarker != null;
+          },
+          onDragUpdate: _draggingMarker != null
               ? (details) {
-                  if (_draggingMarker != null &&
-                      _draggingMarker!.onDrag != null) {
-                    final location = widget.map.offsetToLatLng(
-                      details.localPosition,
-                      context.size!.width,
-                      context.size!.height,
-                    );
+                  final location = widget.map.offsetToLatLng(
+                    details.localFocalPoint,
+                    context.size!.width,
+                    context.size!.height,
+                  );
 
-                    widget.markerLayerOptions.markers.remove(_draggingMarker!);
-                    _draggingMarker =
-                        _draggingMarker!.copyWithNewDelta(location);
-                    widget.markerLayerOptions.markers.add(_draggingMarker!);
+                  widget.markerLayerOptions.markers.remove(_draggingMarker!);
+                  _draggingMarker = _draggingMarker!.copyWithNewDelta(location);
+                  widget.markerLayerOptions.markers.add(_draggingMarker!);
 
-                    _draggingMarker!.onDrag?.call(_draggingMarker!);
-                    setState(() => _pxCache = generatePxCache());
-                  }
+                  _draggingMarker!.onDrag?.call(_draggingMarker!);
+                  setState(() => _pxCache = generatePxCache());
+                  return true;
                 }
               : null,
-          onPointerUp: (_) {
-            setState(() {
-              widget.markerLayerOptions.handlingTouch = false;
-              _draggingMarker = null;
-            });
-          },
+          onDragEnd: _draggingMarker != null
+              ? (details) {
+                  setState(() {
+                    _draggingMarker = null;
+                  });
+                  return true;
+                }
+              : null,
           child: Container(
             child: Stack(
               children: markers,

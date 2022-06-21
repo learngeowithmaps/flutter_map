@@ -15,8 +15,16 @@ class HomePage extends StatelessWidget {
         onTap: (_) {},
         id: "6",
         points: [
-          [LatLng(51.5, -0.09), LatLng(56.5, -2.09), LatLng(59.5, -5.09)],
-          [LatLng(61.5, -0.09), LatLng(66.5, -2.09), LatLng(69.5, -5.09)],
+          [
+            LatLng(51.5, -0.09),
+            LatLng(56.5, -2.09),
+            LatLng(59.5, -5.09),
+          ],
+          [
+            LatLng(61.5, -0.09),
+            LatLng(66.5, -2.09),
+            LatLng(69.5, -5.09),
+          ],
         ],
         builder: (
           context,
@@ -30,12 +38,24 @@ class HomePage extends StatelessWidget {
         },
       ),
       MultiPolygon(
-        onDrag: (_) {},
-        onTap: (_) {},
+        onDrag: (_) {
+          print("polygon dragged" + DateTime.now().toIso8601String());
+        },
+        onTap: (_) {
+          print("polygon tapped" + DateTime.now().toIso8601String());
+        },
         id: "7",
         points: [
-          [LatLng(41.5, -0.09), LatLng(46.5, -2.09), LatLng(49.5, -5.09)],
-          [LatLng(31.5, -0.09), LatLng(36.5, -2.09), LatLng(39.5, -5.09)],
+          [
+            LatLng(41.5, -0.09),
+            LatLng(46.5, -2.09),
+            LatLng(49.5, -5.09),
+          ],
+          [
+            LatLng(31.5, -0.09),
+            LatLng(36.5, -2.09),
+            LatLng(39.5, -5.09),
+          ],
         ],
         builder: (
           context,
@@ -55,12 +75,15 @@ class HomePage extends StatelessWidget {
         width: 80.0,
         height: 80.0,
         onDrag: (_) {},
+        onTap: (_) {
+          print("TAPPED" + DateTime.now().toIso8601String());
+        },
         points: [
           LatLng(53.3498, -6.2603),
           LatLng(48.8566, 2.3522),
         ],
         builder: (ctx) => Container(
-          child: Text("two"),
+          color: Colors.red,
         ),
       ),
     ];

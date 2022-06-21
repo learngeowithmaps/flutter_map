@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Port of PolyUtil from android-maps-utils (https://github.com/googlemaps/android-maps-utils)
@@ -67,9 +68,20 @@ class PolygonUtil {
   }
 
   static bool containsLocation(
-          LatLng point, List<LatLng> polygon, bool geodesic) =>
-      containsLocationAtLatLng(
-          point.latitude, point.longitude, polygon, geodesic);
+      LatLng point, List<LatLng> polygon, bool geodesic,
+      {bool debug = false}) {
+    if (debug) {
+      print(
+          "checkingcontains location (${point.longitude},${point.latitude}) for polygon");
+      var op = "";
+      for (var point in polygon) {
+        op += "${point.longitude},${point.latitude},";
+      }
+      print(op);
+    }
+    return containsLocationAtLatLng(
+        point.latitude, point.longitude, polygon, geodesic);
+  }
 
   /// Computes whether the given point lies inside the specified polygon.
   /// The polygon is always considered closed, regardless of whether the last

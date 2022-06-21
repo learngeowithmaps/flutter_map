@@ -47,19 +47,20 @@ extension LatLngHelper on LatLng {
   }
 }
 
-abstract class MapElement<T, W> {
+abstract class MapElement<WidgetType, MapElementType> {
   ///used in comparing
-  final Function(W)? onTap, onDrag;
+  final Function(MapElementType)? onTap, onDrag;
   final String id;
-  final T builder;
+  final WidgetType builder;
 
-  MapElement(
-      {required this.onTap,
-      required this.onDrag,
-      required this.id,
-      required this.builder});
+  MapElement({
+    required this.onTap,
+    required this.onDrag,
+    required this.id,
+    required this.builder,
+  });
 
-  W copyWithNewDelta(LatLng location);
+  MapElementType copyWithNewDelta(LatLng location);
 
   @override
   bool operator ==(Object other) {

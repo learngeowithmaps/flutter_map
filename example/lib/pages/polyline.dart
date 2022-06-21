@@ -51,7 +51,8 @@ class PolylinePage extends StatelessWidget {
                         id: "4",
                         points: points,
                         onTap: (_) {
-                          print("YASS");
+                          print("polyline tapped" +
+                              DateTime.now().toIso8601String());
                         },
                         builder: (context, points, offsets, boundingBox) {
                           return MultiPolylineWidget(

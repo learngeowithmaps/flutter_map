@@ -19,9 +19,9 @@ abstract class MapGestureMixin extends State<FlutterMap>
 
   var _pointerCounter = 0;
 
-  void savePointer(PointerEvent event) => ++_pointerCounter;
+  void savePointer() => ++_pointerCounter;
 
-  void removePointer(PointerEvent event) => --_pointerCounter;
+  void removePointer() => --_pointerCounter;
 
   var _rotationStarted = false;
   var _pinchZoomStarted = false;

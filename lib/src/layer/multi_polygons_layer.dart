@@ -1,14 +1,19 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_map/src/helpers/gesture.dart';
+import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
+
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/helpers/map_toolkit.dart';
 import 'package:flutter_map/src/map/map.dart';
-import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
+
 import '../helpers/helpers.dart';
 
 class MultiPolygonLayerOptions extends LayerOptions<MultiPolygon> {
@@ -102,7 +107,6 @@ class MultiPolygonLayer extends StatefulWidget {
 
 class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
   MultiPolygon? _draggingPolygon;
-  LatLng? _lastDragPoint;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -141,63 +145,96 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
             ),
           );
         }
-
-        return Listener(
-          onPointerMove: widget.polygonOpts.handlingTouch
-              ? (details) {
-                  if (_draggingPolygon != null &&
-                      _draggingPolygon!.onDrag != null) {
-                    final location = widget.map.offsetToLatLng(
-                      details.localPosition,
-                      context.size!.width,
-                      context.size!.height,
-                    );
-
-                    final delta = _lastDragPoint!.difference(location);
-                    _lastDragPoint = location;
-
-                    widget.polygonOpts.polygons.remove(_draggingPolygon!);
-
-                    _draggingPolygon =
-                        _draggingPolygon!.copyWithNewDelta(delta);
-                    widget.polygonOpts.polygons.add(_draggingPolygon!);
-
-                    _draggingPolygon!.onDrag?.call(_draggingPolygon!);
-                    setState(() {});
-                  }
-                }
-              : null,
-          onPointerUp: (_) {
-            setState(() {
-              widget.polygonOpts.handlingTouch = false;
-              _draggingPolygon = null;
-              _lastDragPoint = null;
-            });
+        return FlutterMapLayerGestureListener(
+          onDragStart: (details) {
+            _draggingPolygon = _tapped(
+              details.localFocalPoint,
+              context,
+              false,
+            );
+            if (_draggingPolygon == null) {
+              return false;
+            }
+            setState(() {});
+            return true;
           },
-          child: MultiPolygonGestureDetector(
-            mapState: widget.map,
-            polygons: widget.polygonOpts.polygons,
-            onTapDownOnPolygon: (polygon, details) {
-              setState(() {
-                widget.polygonOpts.handlingTouch = true;
-                _draggingPolygon = polygon;
-                _lastDragPoint = widget.map.offsetToLatLng(
-                  details.localPosition,
-                  context.size!.width,
-                  context.size!.height,
-                );
-              });
-            },
-            onTapOnPolygon: (polygon) {
-              polygon.onTap?.call(polygon);
-            },
-            child: Stack(
-              children: polygons,
-            ),
+          onDragUpdate: (details) {
+            if (_draggingPolygon == null) {
+              return false;
+            }
+            final location = widget.map.offsetToLatLng(
+              details.localFocalPoint - details.focalPointDelta,
+              context.size!.width,
+              context.size!.height,
+            );
+            final location2 = widget.map.offsetToLatLng(
+              details.localFocalPoint,
+              context.size!.width,
+              context.size!.height,
+            );
+
+            final delta = location.difference(location2);
+
+            widget.polygonOpts.polygons.remove(_draggingPolygon);
+
+            _draggingPolygon = _draggingPolygon!.copyWithNewDelta(delta);
+            widget.polygonOpts.polygons.add(_draggingPolygon!);
+
+            _draggingPolygon!.onDrag!.call(_draggingPolygon!);
+            setState(() {});
+            return true;
+          },
+          onDragEnd: (details) {
+            if (_draggingPolygon == null) {
+              return false;
+            }
+            setState(() {
+              _draggingPolygon = null;
+            });
+            return true;
+          },
+          onTap: (details) {
+            final tapped = _tapped(
+              details.localPosition,
+              context,
+              false,
+            );
+            if (tapped == null) {
+              return false;
+            }
+            tapped.onTap!.call(tapped);
+            return true;
+          },
+          child: Stack(
+            children: polygons,
           ),
         );
       },
     );
+  }
+
+  MultiPolygon? _tapped(Offset offset, BuildContext context, bool forTap) {
+    final location = widget.map.offsetToLatLng(
+      offset,
+      context.size!.width,
+      context.size!.height,
+    );
+    for (var p in widget.polygonOpts.polygons) {
+      final valid = forTap ? p.onTap != null : p.onDrag != null;
+      if (valid &&
+          p.points.any(
+            (points) => PolygonUtil.containsLocation(
+              location,
+              points,
+              true,
+            ),
+          )) {
+        if ((p.onDrag != null || p.onTap != null)) {
+          return p;
+        }
+      }
+    }
+    return null;
   }
 
   void _fillOffsets(
@@ -224,70 +261,121 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
   }
 }
 
-class MultiPolygonGestureDetector extends StatefulWidget {
-  final List<MultiPolygon> polygons;
-  final MapState mapState;
-  final Widget child;
-  final Function(MultiPolygon, TapDownDetails) onTapDownOnPolygon;
-  final Function(MultiPolygon) onTapOnPolygon;
-  const MultiPolygonGestureDetector({
-    Key? key,
-    required this.polygons,
-    required this.mapState,
-    required this.child,
-    required this.onTapDownOnPolygon,
-    required this.onTapOnPolygon,
-  }) : super(key: key);
+/* class MultiPolygonGestureDetector
+    extends MapElementGestureDetector<MultiPolygon> {
+  MultiPolygonGestureDetector(
+      {required List<MultiPolygon> polygons,
+      required MapState mapState,
+      required Widget child,
+      required void Function(MultiPolygon p1, ScaleStartDetails p2)
+          onDragStartOnPolygon,
+      required void Function(MultiPolygon p1) onTapOnPolygon,
+      required void Function(MultiPolygon p1, ScaleUpdateDetails p2)
+          onDragUpdateOnPolygon,
+      required void Function() onDragEndOnPolygon})
+      : super(
+          polygons: polygons,
+          mapState: mapState,
+          child: child,
+          onDragStartOnPolygon: onDragStartOnPolygon,
+          onTapOnPolygon: onTapOnPolygon,
+          onDragUpdateOnPolygon: onDragUpdateOnPolygon,
+          onDragEndOnPolygon: onDragEndOnPolygon,
+        );
 
   @override
-  State<MultiPolygonGestureDetector> createState() =>
-      _MultiPolygonGestureDetectorState();
-}
-
-class _MultiPolygonGestureDetectorState
-    extends State<MultiPolygonGestureDetector> {
-  Offset? _lastOffset;
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      child: widget.child,
-      onTapDown: (details) {
-        final p = _tapped(details.localPosition, context);
-        if (p != null) {
-          widget.onTapDownOnPolygon(p, details);
-          _lastOffset = details.localPosition;
-        } else {
-          _lastOffset = null;
-        }
-      },
-      onTapUp: (details) {
-        if (_lastOffset == details.localPosition) {
-          final p = _tapped(details.localPosition, context);
-          if (p != null) {
-            widget.onTapOnPolygon(p);
-          }
-        }
-      },
-    );
-  }
-
-  MultiPolygon? _tapped(Offset offset, BuildContext context) {
-    final location = widget.mapState.offsetToLatLng(
+  MultiPolygon? tapped(Offset offset, BuildContext context, bool forTap) {
+    final location = mapState.offsetToLatLng(
       offset,
       context.size!.width,
       context.size!.height,
     );
-    for (var p in widget.polygons) {
-      if ((p.onDrag != null || p.onTap != null) &&
-          p.points.any((points) =>
-              PolygonUtil.containsLocation(location, points, true))) {
-        return p;
+    for (var p in polygons) {
+      if (p.points.any(
+        (points) => PolygonUtil.containsLocation(
+          location,
+          points,
+          true,
+        ),
+      )) {
+        if ((p.onDrag != null || p.onTap != null)) {
+          return p;
+        }
       }
     }
     return null;
   }
 }
 
+abstract class MapElementGestureDetector<MapElemementType extends MapElement>
+    extends StatefulWidget {
+  final List<MapElemementType> polygons;
+  final MapState mapState;
+  final Widget child;
+  final void Function(MapElemementType, ScaleStartDetails) onDragStartOnPolygon;
+  final void Function(MapElemementType, ScaleUpdateDetails)
+      onDragUpdateOnPolygon;
+  final void Function() onDragEndOnPolygon;
+  final void Function(MapElemementType) onTapOnPolygon;
+  const MapElementGestureDetector({
+    Key? key,
+    required this.polygons,
+    required this.mapState,
+    required this.child,
+    required this.onDragStartOnPolygon,
+    required this.onTapOnPolygon,
+    required this.onDragUpdateOnPolygon,
+    required this.onDragEndOnPolygon,
+  }) : super(key: key);
+
+  MapElemementType? tapped(Offset offset, BuildContext context, bool forTap);
+
+  @override
+  State<MapElementGestureDetector<MapElemementType>> createState() =>
+      _MapElementGestureDetectorState<MapElemementType>();
+}
+
+class _MapElementGestureDetectorState<MapElemementType extends MapElement>
+    extends State<MapElementGestureDetector<MapElemementType>> {
+  MapElemementType? tapped;
+  @override
+  Widget build(BuildContext context) {
+    return LayerGestureListener(
+      child: widget.child,
+      onDragStart: (details) {
+        tapped = widget.tapped(details.localFocalPoint, context, false);
+        if (tapped != null) {
+          widget.onDragStartOnPolygon.call(tapped!, details);
+          return true;
+        } else {
+          return false;
+        }
+      },
+      onDragUpdate: (details) {
+        if (tapped != null) {
+          widget.onDragUpdateOnPolygon.call(tapped!, details);
+          return true;
+        } else {
+          return false;
+        }
+      },
+      onDragEnd: (details) {
+        tapped = null;
+        widget.onDragEndOnPolygon.call();
+        return true;
+      },
+      onTap: (details) {
+        final p = widget.tapped(details.localPosition, context, true);
+        if (p != null) {
+          widget.onTapOnPolygon.call(p);
+          return true;
+        }
+        return false;
+      },
+    );
+  }
+}
+ */
 typedef MultiPolygonBuilder = Widget Function(
   BuildContext context,
   List<List<LatLng>> points,
