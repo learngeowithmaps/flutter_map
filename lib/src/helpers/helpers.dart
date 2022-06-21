@@ -49,7 +49,7 @@ extension LatLngHelper on LatLng {
 
 abstract class MapElement<WidgetType, MapElementType> {
   ///used in comparing
-  final Function(MapElementType)? onTap, onDrag;
+  final Function()? onTap, onDrag;
   final String id;
   final WidgetType builder;
 

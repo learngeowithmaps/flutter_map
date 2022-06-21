@@ -11,8 +11,8 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     var polygons = <MultiPolygon>[
       MultiPolygon(
-        onDrag: (_) {},
-        onTap: (_) {},
+        onDrag: () {},
+        onTap: () {},
         id: "6",
         points: [
           [
@@ -38,10 +38,10 @@ class HomePage extends StatelessWidget {
         },
       ),
       MultiPolygon(
-        onDrag: (_) {
+        onDrag: () {
           print("polygon dragged" + DateTime.now().toIso8601String());
         },
-        onTap: (_) {
+        onTap: () {
           print("polygon tapped" + DateTime.now().toIso8601String());
         },
         id: "7",
@@ -74,8 +74,8 @@ class HomePage extends StatelessWidget {
         id: "2",
         width: 80.0,
         height: 80.0,
-        onDrag: (_) {},
-        onTap: (_) {
+        onDrag: () {},
+        onTap: () {
           print("TAPPED" + DateTime.now().toIso8601String());
         },
         points: [
