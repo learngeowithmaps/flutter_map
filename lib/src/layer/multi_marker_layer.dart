@@ -324,7 +324,6 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
                 _draggingMultiMarker!.copyWithNewDelta(delta);
             widget.markerLayerOptions.multiMarkers.add(_draggingMultiMarker!);
 
-            _draggingMultiMarker!.onDrag?.call(_draggingMultiMarker!);
             generatePxCache();
             widget.markerLayerOptions.doLayerRebuild();
             return true;
@@ -333,6 +332,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
             if (_draggingMultiMarker == null) {
               return false;
             } else {
+              _draggingMultiMarker!.onDrag?.call(_draggingMultiMarker!);
               setState(() {
                 _draggingMultiMarker = null;
               });

@@ -322,13 +322,13 @@ class _MarkerLayerState extends State<MarkerLayer> {
                   _draggingMarker = _draggingMarker!.copyWithNewDelta(location);
                   widget.markerLayerOptions.markers.add(_draggingMarker!);
 
-                  _draggingMarker!.onDrag?.call(_draggingMarker!);
                   setState(() => _pxCache = generatePxCache());
                   return true;
                 }
               : null,
           onDragEnd: _draggingMarker != null
               ? (details) {
+                  _draggingMarker!.onDrag?.call(_draggingMarker!);
                   setState(() {
                     _draggingMarker = null;
                   });
