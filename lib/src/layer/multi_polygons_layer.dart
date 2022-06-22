@@ -89,7 +89,11 @@ class MultiPolygonLayerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mapState = MapState.maybeOf(context)!;
-    return MultiPolygonLayer(options, mapState, mapState.onMoved);
+    return MultiPolygonLayer(
+      options,
+      mapState,
+      options.rebuild,
+    );
   }
 }
 
@@ -181,7 +185,7 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
             widget.polygonOpts.polygons.add(_draggingPolygon!);
 
             _draggingPolygon!.onDrag!.call(_draggingPolygon!);
-            setState(() {});
+            widget.polygonOpts.doLayerRebuild();
             return true;
           },
           onDragEnd: (details) {

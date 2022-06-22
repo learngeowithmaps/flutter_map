@@ -137,7 +137,7 @@ class MultiMarkerLayerWidget extends StatelessWidget {
     return MultiMarkerLayer(
       options,
       mapState,
-      mapState.onMoved,
+      options.rebuild,
     );
   }
 }
@@ -325,7 +325,8 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
             widget.markerLayerOptions.multiMarkers.add(_draggingMultiMarker!);
 
             _draggingMultiMarker!.onDrag?.call(_draggingMultiMarker!);
-            setState(generatePxCache);
+            generatePxCache();
+            widget.markerLayerOptions.doLayerRebuild();
             return true;
           },
           onDragEnd: (details) {

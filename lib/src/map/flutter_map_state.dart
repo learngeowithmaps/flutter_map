@@ -89,34 +89,48 @@ class FlutterMapState extends MapGestureMixin {
 
       return MapStateInheritedWidget(
         mapState: mapState,
-        child: FlutterMapMasterGestureDetector(
+        child: FlutterMapLayerGestureListener(
           onLongPress: (event) {
             handleLongPress(TapPosition(
               event.globalPosition,
               event.localPosition,
             ));
+            return true;
           },
           onDoubleTap: (event) {
             handleDoubleTap(TapPosition(
               event.globalPosition,
               event.localPosition,
             ));
+            return true;
           },
-          onScaleStart: handleScaleStart,
-          onScaleUpdate: handleScaleUpdate,
-          onScaleEnd: handleScaleEnd,
+          onDragStart: (_) {
+            handleScaleStart(_);
+            return true;
+          },
+          onDragUpdate: (_) {
+            handleScaleUpdate(_);
+            return true;
+          },
+          onDragEnd: (_) {
+            handleScaleEnd(_);
+            return true;
+          },
           onTap: (event) {
             handleTap(TapPosition(
               event.globalPosition,
               event.localPosition,
             ));
+            return true;
           },
           onTapDown: (event) {
             savePointer();
+            return true;
           },
           onTapUp: (event) {
             handleOnTapUp(event);
             removePointer();
+            return true;
           },
           onTapCancel: removePointer,
           child: ClipRect(

@@ -15,6 +15,7 @@ abstract class MasterGestureSubscriptionController {
   List<LayerGestureTapDownCallback> tapDownCallbacks = [];
   List<LayerGestureTapUpCallback> tapUpCallbacks = [];
   List<LayerGestureTapUpCallback> tapCallbacks = [];
+  List<VoidCallback> tapCancelCallbacks = [];
 
   LayerGestureDragStartCallback listenForDragStart(
       LayerGestureDragStartCallback callback) {
@@ -58,15 +59,23 @@ abstract class MasterGestureSubscriptionController {
         tapUpCallbacks.remove(callback) ||
         tapCallbacks.remove(callback);
   }
+
+  VoidCallback listenForTapCancel(VoidCallback callback) {
+    tapCancelCallbacks.add(callback);
+    return callback;
+  }
 }
 
 class FlutterMapLayerGestureListener extends StatefulWidget {
-  final LayerGestureDragStartCallback? onDragStart;
-  final LayerGestureDragUpdateCallback? onDragUpdate;
-  final LayerGestureDragEndCallback? onDragEnd;
   final LayerGestureTapDownCallback? onTapDown;
   final LayerGestureTapUpCallback? onTapUp;
   final LayerGestureTapUpCallback? onTap;
+  final LayerGestureDragStartCallback? onDragStart;
+  final LayerGestureDragUpdateCallback? onDragUpdate;
+  final LayerGestureDragEndCallback? onDragEnd;
+  final LayerGestureTapUpCallback? onLongPress;
+  final LayerGestureTapDownCallback? onDoubleTap;
+  final VoidCallback? onTapCancel;
   final Widget child;
 
   const FlutterMapLayerGestureListener({
@@ -78,6 +87,9 @@ class FlutterMapLayerGestureListener extends StatefulWidget {
     this.onTapUp,
     this.onTap,
     required this.child,
+    this.onLongPress,
+    this.onDoubleTap,
+    this.onTapCancel,
   }) : super(key: key);
 
   @override
@@ -114,6 +126,10 @@ class _FlutterMapLayerGestureListenerState
       _allListeners.add(FlutterMapMasterGestureDetector.of(context)
           .listenForTap(widget.onTap!));
     }
+    if (widget.onTapCancel != null) {
+      _allListeners.add(FlutterMapMasterGestureDetector.of(context)
+          .listenForTapCancel(widget.onTapCancel!));
+    }
     super.initState();
   }
 
@@ -133,27 +149,27 @@ class _FlutterMapLayerGestureListenerState
 
 class FlutterMapMasterGestureDetector extends StatefulWidget {
   final Widget child;
-  final GestureScaleStartCallback onScaleStart;
-  final GestureScaleUpdateCallback onScaleUpdate;
-  final GestureScaleEndCallback onScaleEnd;
-  final GestureTapUpCallback onTap;
-  final GestureTapUpCallback onLongPress;
-  final GestureTapDownCallback onTapDown;
-  final GestureTapUpCallback onTapUp;
-  final GestureTapDownCallback onDoubleTap;
-  final VoidCallback onTapCancel;
+  final LayerGestureTapDownCallback? onTapDown;
+  final LayerGestureTapUpCallback? onTapUp;
+  final LayerGestureTapUpCallback? onTap;
+  final LayerGestureDragStartCallback? onDragStart;
+  final LayerGestureDragUpdateCallback? onDragUpdate;
+  final LayerGestureDragEndCallback? onDragEnd;
+  final LayerGestureTapUpCallback? onLongPress;
+  final LayerGestureTapDownCallback? onDoubleTap;
+  final VoidCallback? onTapCancel;
   const FlutterMapMasterGestureDetector({
     Key? key,
     required this.child,
-    required this.onScaleStart,
-    required this.onScaleUpdate,
-    required this.onScaleEnd,
-    required this.onTap,
-    required this.onLongPress,
-    required this.onTapDown,
-    required this.onTapUp,
-    required this.onDoubleTap,
-    required this.onTapCancel,
+    this.onDragStart,
+    this.onDragUpdate,
+    this.onDragEnd,
+    this.onTap,
+    this.onLongPress,
+    this.onTapDown,
+    this.onTapUp,
+    this.onDoubleTap,
+    this.onTapCancel,
   }) : super(key: key);
 
   static MasterGestureSubscriptionController of(BuildContext context) {
@@ -183,22 +199,22 @@ class _FlutterMapMasterGestureDetectorState
     _gestureDetector = GestureDetector(
       onScaleStart: (deets) {
         if (!_handle(dragStartCallbacks, deets)) {
-          widget.onScaleStart.call(deets);
+          widget.onDragStart?.call(deets);
         }
       },
       onScaleUpdate: (deets) {
         if (!_handle(dragUpdateCallbacks, deets)) {
-          widget.onScaleUpdate.call(deets);
+          widget.onDragUpdate?.call(deets);
         }
         paint(deets.localFocalPoint);
       },
       onScaleEnd: (deets) {
         if (!_handle(dragEndCallbacks, deets)) {
-          widget.onScaleEnd.call(deets);
+          widget.onDragEnd?.call(deets);
         }
       },
       onDoubleTap: () {
-        widget.onDoubleTap.call(_lastDoubleTapDown!);
+        widget.onDoubleTap?.call(_lastDoubleTapDown!);
       },
       onDoubleTapDown: (deets) {
         _lastDoubleTapDown = deets;
@@ -207,21 +223,25 @@ class _FlutterMapMasterGestureDetectorState
         _lastDoubleTapDown = null;
       },
       onLongPress: () {},
-      onTapCancel: widget.onTapCancel,
+      onTapCancel: () {
+        for (var element in tapCancelCallbacks) {
+          element();
+        }
+      },
       onTapDown: (deets) {
         _lastTapDown = deets;
         if (!_handle(tapDownCallbacks, deets)) {
-          widget.onTapDown(deets);
+          widget.onTapDown?.call(deets);
         }
       },
       onTapUp: (deets) {
         _lastTapUp = deets;
         if (!_handle(tapUpCallbacks, deets)) {
-          widget.onTapUp(deets);
+          widget.onTapUp?.call(deets);
         }
         if (_lastTapDown?.localPosition == _lastTapUp!.localPosition) {
           if (!_handle(tapCallbacks, deets)) {
-            widget.onTap(deets);
+            widget.onTap?.call(deets);
           }
         }
         paint(deets.localPosition);
@@ -233,7 +253,7 @@ class _FlutterMapMasterGestureDetectorState
 
   bool _handle<CallbackType extends Function, DetailsType>(
       List<CallbackType> callabacks, DetailsType deets) {
-    for (var callback in callabacks) {
+    for (var callback in callabacks.reversed) {
       if (callback(deets)) {
         return true;
       }

@@ -71,7 +71,11 @@ class MultiPolylineLayerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mapState = MapState.maybeOf(context)!;
-    return MultiPolylineLayer(options, mapState, mapState.onMoved);
+    return MultiPolylineLayer(
+      options,
+      mapState,
+      options.rebuild,
+    );
   }
 }
 
