@@ -70,11 +70,9 @@ class FlutterMapState extends MapGestureMixin {
   }
 
   Stream<Null> _merge(LayerOptions options) {
-    if (options.rebuild == null) return mapState.onMoved;
-
     var group = StreamGroup<Null>();
     group.add(mapState.onMoved);
-    group.add(options.rebuild!);
+    group.add(options.rebuild);
     groups.add(group);
     return group.stream;
   }
