@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../widgets/drawer.dart';
@@ -34,38 +35,40 @@ class PolylinePage extends StatelessWidget {
               child: Text('Polylines'),
             ),
             Flexible(
-              child: FlutterMap(
-                options: MapOptions(
-                  center: LatLng(51.5, -0.09),
-                  zoom: 5.0,
+              child: FlutterMapMasterGestureDetector(
+                child: FlutterMap(
+                  options: MapOptions(
+                    center: LatLng(51.5, -0.09),
+                    zoom: 5.0,
+                  ),
+                  layers: [
+                    TileLayerOptions(
+                      urlTemplate:
+                          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      subdomains: ['a', 'b', 'c'],
+                    ),
+                    MultiPolylineLayerOptions(
+                      multiPolylines: [
+                        MultiPolyline(
+                          id: "4",
+                          points: points,
+                          onTap: (_) {
+                            print("polyline tapped" +
+                                DateTime.now().toIso8601String());
+                          },
+                          builder: (context, points, offsets, boundingBox) {
+                            return MultiPolylineWidget(
+                              points: points,
+                              offsets: offsets,
+                              boundingBox: boundingBox,
+                              strokeWidth: 4.0,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                layers: [
-                  TileLayerOptions(
-                    urlTemplate:
-                        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    subdomains: ['a', 'b', 'c'],
-                  ),
-                  MultiPolylineLayerOptions(
-                    multiPolylines: [
-                      MultiPolyline(
-                        id: "4",
-                        points: points,
-                        onTap: (_) {
-                          print("polyline tapped" +
-                              DateTime.now().toIso8601String());
-                        },
-                        builder: (context, points, offsets, boundingBox) {
-                          return MultiPolylineWidget(
-                            points: points,
-                            offsets: offsets,
-                            boundingBox: boundingBox,
-                            strokeWidth: 4.0,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
               ),
             ),
           ],

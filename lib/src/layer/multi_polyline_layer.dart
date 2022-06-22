@@ -45,7 +45,7 @@ class MultiPolyline extends MapElement<MultiPolylineBuilder, MultiPolyline> {
   LatLngBounds? boundingBox;
 
   MultiPolyline({
-    ui.VoidCallback? onTap,
+    Function(MultiPolyline)? onTap,
     required String id,
     required MultiPolylineBuilder builder,
     required this.points,
@@ -145,7 +145,7 @@ class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
             if (tapped == null) {
               return false;
             }
-            tapped.onTap!.call();
+            tapped.onTap!.call(tapped);
             return true;
           },
           child: Stack(

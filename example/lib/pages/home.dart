@@ -11,7 +11,6 @@ class HomePage extends StatefulWidget {
   static const String route = '/';
 
   @override
-<<<<<<< HEAD
   State<HomePage> createState() => _HomePageState();
 }
 
@@ -56,50 +55,6 @@ class _HomePageState extends State<HomePage> {
               LatLng(66.5, -2.09),
               LatLng(69.5, -5.09),
             ],
-=======
-  Widget build(BuildContext context) {
-    var polygons = <MultiPolygon>[
-      MultiPolygon(
-        onDrag: () {},
-        onTap: () {},
-        id: "6",
-        points: [
-          [
-            LatLng(51.5, -0.09),
-            LatLng(56.5, -2.09),
-            LatLng(59.5, -5.09),
-          ],
-          [
-            LatLng(61.5, -0.09),
-            LatLng(66.5, -2.09),
-            LatLng(69.5, -5.09),
-          ],
-        ],
-        builder: (
-          context,
-          points,
-          offsets,
-        ) {
-          return MultiPolygonWidget(
-            points: points,
-            offsets: offsets,
-          );
-        },
-      ),
-      MultiPolygon(
-        onDrag: () {
-          print("polygon dragged" + DateTime.now().toIso8601String());
-        },
-        onTap: () {
-          print("polygon tapped" + DateTime.now().toIso8601String());
-        },
-        id: "7",
-        points: [
-          [
-            LatLng(41.5, -0.09),
-            LatLng(46.5, -2.09),
-            LatLng(49.5, -5.09),
->>>>>>> 7c0201a770901a7a1a614b17dba07a3b91f9ffb0
           ],
           builder: (
             context,
@@ -132,7 +87,6 @@ class _HomePageState extends State<HomePage> {
               LatLng(39.5, -5.09),
             ],
           ],
-<<<<<<< HEAD
           builder: (
             context,
             points,
@@ -143,36 +97,6 @@ class _HomePageState extends State<HomePage> {
               offsets: offsets,
             );
           },
-=======
-        ],
-        builder: (
-          context,
-          points,
-          offsets,
-        ) {
-          return MultiPolygonWidget(
-            points: points,
-            offsets: offsets,
-          );
-        },
-      ),
-    ];
-    var markers = <MultiMarker>[
-      MultiMarker(
-        id: "2",
-        width: 80.0,
-        height: 80.0,
-        onDrag: () {},
-        onTap: () {
-          print("TAPPED" + DateTime.now().toIso8601String());
-        },
-        points: [
-          LatLng(53.3498, -6.2603),
-          LatLng(48.8566, 2.3522),
-        ],
-        builder: (ctx) => Container(
-          color: Colors.red,
->>>>>>> 7c0201a770901a7a1a614b17dba07a3b91f9ffb0
         ),
       ]);
       polygonRebuild.add(null);
