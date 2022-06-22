@@ -42,8 +42,6 @@ class MultiPolygonLayerOptions extends LayerOptions<MultiPolygon> {
   }
 }
 
-typedef MultiPolygonCallback = void Function(MultiPolygon);
-
 class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
   final List<List<LatLng>> points;
   final List<List<Offset>> offsets = [];
@@ -53,8 +51,8 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
     required String id,
     required MultiPolygonBuilder builder,
     required this.points,
-    MultiPolygonCallback? onTap,
-    MultiPolygonCallback? onDrag,
+    VoidCallback? onTap,
+    VoidCallback? onDrag,
   }) : super(
           builder: builder,
           id: id,
@@ -184,8 +182,13 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
             _draggingPolygon = _draggingPolygon!.copyWithNewDelta(delta);
             widget.polygonOpts.polygons.add(_draggingPolygon!);
 
+<<<<<<< HEAD
             _draggingPolygon!.onDrag!.call(_draggingPolygon!);
             widget.polygonOpts.doLayerRebuild();
+=======
+            _draggingPolygon!.onDrag!.call();
+            setState(() {});
+>>>>>>> 7c0201a770901a7a1a614b17dba07a3b91f9ffb0
             return true;
           },
           onDragEnd: (details) {
@@ -206,7 +209,7 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
             if (tapped == null) {
               return false;
             }
-            tapped.onTap!.call(tapped);
+            tapped.onTap!.call();
             return true;
           },
           child: Stack(

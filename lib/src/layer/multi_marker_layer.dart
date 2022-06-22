@@ -94,8 +94,8 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
     this.rotateOrigin,
     this.rotateAlignment,
     AnchorPos? anchorPos,
-    MultiMarkerCallback? onTap,
-    MultiMarkerCallback? onDrag,
+    VoidCallback? onTap,
+    VoidCallback? onDrag,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
           id: id,
@@ -324,9 +324,14 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
                 _draggingMultiMarker!.copyWithNewDelta(delta);
             widget.markerLayerOptions.multiMarkers.add(_draggingMultiMarker!);
 
+<<<<<<< HEAD
             _draggingMultiMarker!.onDrag?.call(_draggingMultiMarker!);
             generatePxCache();
             widget.markerLayerOptions.doLayerRebuild();
+=======
+            _draggingMultiMarker!.onDrag?.call();
+            setState(generatePxCache);
+>>>>>>> 7c0201a770901a7a1a614b17dba07a3b91f9ffb0
             return true;
           },
           onDragEnd: (details) {
@@ -348,7 +353,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
             if (tapped == null) {
               return false;
             } else {
-              tapped.onTap!.call(tapped);
+              tapped.onTap!.call();
               return true;
             }
           },
