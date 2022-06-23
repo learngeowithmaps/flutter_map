@@ -61,15 +61,19 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
         );
   @override
   MultiPolygon copyWithNewDelta(LatLng delta) {
-    final newPoints = points.map((ee) {
-      return ee
-          .map(
-            (e) => e.add(
-              delta,
-            ),
-          )
-          .toList();
-    }).toList();
+    final newPoints = () {
+      try {
+        return points.map((ee) {
+          return ee
+              .map(
+                (e) => e.add(delta, remainder: false),
+              )
+              .toList();
+        }).toList();
+      } catch (e) {
+        return points;
+      }
+    }();
     return MultiPolygon(
       points: newPoints,
       id: id,
