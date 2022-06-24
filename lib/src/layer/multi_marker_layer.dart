@@ -239,7 +239,8 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
         for (var marker in widget.markerLayerOptions.multiMarkers) {
           for (var j = 0; j < marker.points.length; j++) {
             // Decide whether to use cached point or calculate it
-            final useCache = _draggingMultiMarker == marker ? false : sameZoom;
+            final useCache =
+                marker.equals(_draggingMultiMarker) ? false : sameZoom;
             if (!_pxCache.containsKey(marker) || !useCache) {
               generatePxCache(marker);
             }

@@ -107,11 +107,7 @@ abstract class MapElement<WidgetType, MapElementType> {
 
   MapElementType copyWithNewDelta(LatLng location);
 
-  @override
-  bool operator ==(Object other) {
+  bool equals(dynamic other) {
     return other is MapElement && other.id == id;
   }
-
-  @override
-  int get hashCode => id.hashCode;
 }
