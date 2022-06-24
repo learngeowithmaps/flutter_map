@@ -54,11 +54,11 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
     Function(MultiPolygon)? onTap,
     Function(MultiPolygon)? onDrag,
   }) : super(
-          builder: builder,
-          id: id,
-          onDrag: onDrag,
-          onTap: onTap,
-        );
+            builder: builder,
+            id: id,
+            onDrag: onDrag,
+            onTap: onTap,
+            delta: LatLng.zero());
   @override
   MultiPolygon copyWithNewDelta(LatLng delta) {
     final newPoints = () {

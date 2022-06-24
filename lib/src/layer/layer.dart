@@ -33,4 +33,6 @@ abstract class LayerOptions<LayerElementType> {
   void doLayerRebuild() {
     _interenalRebuild.add(null);
   }
+
+  void addElements(List<LayerElementType> elements) {}
 }

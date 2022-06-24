@@ -53,11 +53,11 @@ class Polygon extends MapElement<PolygonBuilder, Polygon> {
             ? null
             : List.generate(holePointsList.length, (_) => []),
         super(
-          builder: builder,
-          id: id,
-          onDrag: onDrag,
-          onTap: onTap,
-        );
+            builder: builder,
+            id: id,
+            onDrag: onDrag,
+            onTap: onTap,
+            delta: LatLng.zero());
   @override
   Polygon copyWithNewPoint(LatLng point) {
     final oldCenter = LatLngHelper.centerOfListOfPoints(points);

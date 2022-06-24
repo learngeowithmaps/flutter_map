@@ -48,11 +48,11 @@ class Polyline extends MapElement<PolylineBuilder, Polyline> {
     required PolylineBuilder builder,
     required this.points,
   }) : super(
-          builder: builder,
-          id: id,
-          onDrag: null,
-          onTap: onTap,
-        );
+            builder: builder,
+            id: id,
+            onDrag: null,
+            onTap: onTap,
+            delta: LatLng.zero());
 
   @override
   Polyline copyWithNewDelta(LatLng location) {

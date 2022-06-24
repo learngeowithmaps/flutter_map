@@ -98,11 +98,11 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
     Function(MultiMarker)? onDrag,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
-          id: id,
-          builder: builder,
-          onDrag: onDrag,
-          onTap: onTap,
-        );
+            id: id,
+            builder: builder,
+            onDrag: onDrag,
+            onTap: onTap,
+            delta: LatLng.zero());
 
   CustomPoint sw(CustomPoint pxPoint) => CustomPoint(
       pxPoint.x + (width - anchor.left), pxPoint.y - (height - anchor.top));
@@ -239,12 +239,15 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
         for (var marker in widget.markerLayerOptions.multiMarkers) {
           for (var j = 0; j < marker.points.length; j++) {
             // Decide whether to use cached point or calculate it
-            final useCache = _draggingMultiMarker == marker ? false : sameZoom;
+            final useCache = _pxCache.containsKey(marker)
+                ? (_draggingMultiMarker == marker ? false : sameZoom)
+                : false;
             var pxPoint = useCache
                 ? _pxCache[marker]![j]
                 : widget.map.project(marker.points[j]);
             if (!useCache) {
-              _pxCache[marker]![j] = pxPoint;
+              _pxCache.update(marker, (value) => value..add(pxPoint),
+                  ifAbsent: () => [pxPoint]);
             }
 
             final width = marker.width - marker.anchor.left;

@@ -50,11 +50,11 @@ class MultiPolyline extends MapElement<MultiPolylineBuilder, MultiPolyline> {
     required MultiPolylineBuilder builder,
     required this.points,
   }) : super(
-          builder: builder,
-          id: id,
-          onDrag: null,
-          onTap: onTap,
-        );
+            builder: builder,
+            id: id,
+            onDrag: null,
+            onTap: onTap,
+            delta: LatLng.zero());
 
   @override
   MultiPolyline copyWithNewDelta(LatLng location) {

@@ -158,11 +158,11 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
     MarkerCallback? onDrag,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
-          id: id,
-          builder: builder,
-          onDrag: onDrag,
-          onTap: onTap,
-        );
+            id: id,
+            builder: builder,
+            onDrag: onDrag,
+            onTap: onTap,
+            delta: LatLng.zero());
   @override
   Marker copyWithNewDelta(LatLng point) {
     return Marker(

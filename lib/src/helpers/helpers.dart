@@ -2,12 +2,55 @@ library flutter_map.helpers;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../flutter_map.dart';
 
 extension LatLngHelper on LatLng {
+  static List<LatLng> pointsWithDelta(
+    List<LatLng> points,
+    LatLng delta,
+  ) {
+    if (delta == LatLng.zero()) {
+      return points;
+    }
+    try {
+      return points
+          .map(
+            (e) => e.add(
+              delta,
+            ),
+          )
+          .toList();
+    } catch (e) {
+      return points;
+    }
+  }
+
+  static List<List<LatLng>> pointsListWithDelta(
+    List<List<LatLng>> points,
+    LatLng delta,
+  ) {
+    if (delta == LatLng.zero()) {
+      return points;
+    }
+    try {
+      return points.map((ee) {
+        return ee
+            .map(
+              (e) => e.add(
+                delta,
+              ),
+            )
+            .toList();
+      }).toList();
+    } catch (e) {
+      return points;
+    }
+  }
+
   static LatLng centerOfListOfPoints(
     List<LatLng> list,
   ) {
@@ -52,8 +95,10 @@ abstract class MapElement<WidgetType, MapElementType> {
   final Function(MapElementType)? onTap, onDrag;
   final String id;
   final WidgetType builder;
+  final LatLng delta;
 
   MapElement({
+    required this.delta,
     required this.onTap,
     required this.onDrag,
     required this.id,
