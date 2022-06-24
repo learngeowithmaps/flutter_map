@@ -238,12 +238,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
       builder: (BuildContext context, AsyncSnapshot<int?> snapshot) {
         var multiMarkers = <Widget>[];
         final sameZoom = widget.map.zoom == lastZoom;
-        for (var marker in _pxCache.keys) {
-          if (!widget.markerLayerOptions.multiMarkers.contains(marker)) {
-            _pxCache.remove(marker);
-            _boundsCache.remove(marker);
-            continue;
-          }
+        for (var marker in widget.markerLayerOptions.multiMarkers) {
           for (var j = 0; j < marker.points.length; j++) {
             // Decide whether to use cached point or calculate it
             final useCache =
@@ -374,7 +369,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
       context.size!.width,
       context.size!.height,
     );
-    for (var marker in _boundsCache.keys) {
+    for (var marker in widget.markerLayerOptions.multiMarkers) {
       final valid = forTap ? marker.onTap != null : marker.onDrag != null;
       final allBounds = _boundsCache[marker]!;
       for (var bounds in allBounds) {
