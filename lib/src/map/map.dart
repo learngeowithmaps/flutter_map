@@ -70,6 +70,11 @@ class MapControllerImpl implements MapController {
 
   @override
   Stream<MapEvent> get mapEventStream => _mapEventSink.stream;
+
+  @override
+  LatLng offsetToLatLng(Offset offset, double width, double height) {
+    return _state.offsetToLatLng(offset, width, height);
+  }
 }
 
 class MapState {

@@ -116,6 +116,8 @@ abstract class MapController {
   /// same as the old rotate)
   bool rotate(double degree, {String? id});
 
+  LatLng offsetToLatLng(Offset offset, double width, double height);
+
   /// Calls [move] and [rotate] together however layers will rebuild just once
   /// instead of twice
   MoveAndRotateResult moveAndRotate(LatLng center, double zoom, double degree,
