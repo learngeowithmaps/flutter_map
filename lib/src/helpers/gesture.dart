@@ -167,7 +167,7 @@ class FlutterMapMasterGestureDetector extends StatefulWidget {
   final LayerGestureDragStartCallback? onDragStart;
   final LayerGestureDragUpdateCallback? onDragUpdate;
   final LayerGestureDragEndCallback? onDragEnd;
-  final LayerGestureTapUpCallback? onLongPress;
+  final LayerGestureLongPressCallback? onLongPress;
   final LayerGestureTapDownCallback? onDoubleTap;
   final VoidCallback? onTapCancel;
   const FlutterMapMasterGestureDetector({
@@ -210,20 +210,22 @@ class _FlutterMapMasterGestureDetectorState
   void initState() {
     _gestureDetector = GestureDetector(
       onScaleStart: (deets) {
-        if (!_handle(dragStartCallbacks, deets)) {
-          widget.onDragStart?.call(deets);
+        if (widget.onDragStart?.call(deets) ?? false) {
+          return;
         }
+        _handle(dragStartCallbacks, deets);
       },
       onScaleUpdate: (deets) {
-        if (!_handle(dragUpdateCallbacks, deets)) {
-          widget.onDragUpdate?.call(deets);
+        if (widget.onDragUpdate?.call(deets) ?? false) {
+          return;
         }
-        paint(deets.localFocalPoint);
+        _handle(dragUpdateCallbacks, deets);
       },
       onScaleEnd: (deets) {
-        if (!_handle(dragEndCallbacks, deets)) {
-          widget.onDragEnd?.call(deets);
+        if (widget.onDragEnd?.call(deets) ?? false) {
+          return;
         }
+        _handle(dragEndCallbacks, deets);
       },
       onDoubleTap: () {
         widget.onDoubleTap?.call(_lastDoubleTapDown!);
@@ -235,9 +237,10 @@ class _FlutterMapMasterGestureDetectorState
         _lastDoubleTapDown = null;
       },
       onLongPressStart: (deets) {
-        for (var element in longPressCallbacks) {
-          element(deets);
+        if (widget.onLongPress?.call(deets) ?? false) {
+          return;
         }
+        _handle(longPressCallbacks, deets);
       },
       onTapCancel: () {
         for (var element in tapCancelCallbacks) {
@@ -246,21 +249,23 @@ class _FlutterMapMasterGestureDetectorState
       },
       onTapDown: (deets) {
         _lastTapDown = deets;
-        if (!_handle(tapDownCallbacks, deets)) {
-          widget.onTapDown?.call(deets);
+        if (widget.onTapDown?.call(deets) ?? false) {
+          return;
         }
+        _handle(tapDownCallbacks, deets);
       },
       onTapUp: (deets) {
         _lastTapUp = deets;
-        if (!_handle(tapUpCallbacks, deets)) {
-          widget.onTapUp?.call(deets);
+        if (widget.onTapUp?.call(deets) ?? false) {
+          return;
         }
+        _handle(tapUpCallbacks, deets);
         if (_lastTapDown?.localPosition == _lastTapUp!.localPosition) {
-          if (!_handle(tapCallbacks, deets)) {
-            widget.onTap?.call(deets);
+          if (widget.onTap?.call(deets) ?? false) {
+            return;
           }
+          _handle(tapCallbacks, deets);
         }
-        paint(deets.localPosition);
       },
       child: widget.child,
     );
