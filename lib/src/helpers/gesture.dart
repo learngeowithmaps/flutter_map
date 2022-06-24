@@ -7,6 +7,8 @@ typedef LayerGestureDragUpdateCallback = bool Function(
 typedef LayerGestureDragEndCallback = bool Function(ScaleEndDetails details);
 typedef LayerGestureTapDownCallback = bool Function(TapDownDetails details);
 typedef LayerGestureTapUpCallback = bool Function(TapUpDetails details);
+typedef LayerGestureLongPressCallback = bool Function(
+    LongPressStartDetails details);
 
 abstract class MasterGestureSubscriptionController {
   List<LayerGestureDragStartCallback> dragStartCallbacks = [];
@@ -16,6 +18,7 @@ abstract class MasterGestureSubscriptionController {
   List<LayerGestureTapUpCallback> tapUpCallbacks = [];
   List<LayerGestureTapUpCallback> tapCallbacks = [];
   List<VoidCallback> tapCancelCallbacks = [];
+  List<LayerGestureLongPressCallback> longPressCallbacks = [];
 
   LayerGestureDragStartCallback listenForDragStart(
       LayerGestureDragStartCallback callback) {
@@ -64,6 +67,11 @@ abstract class MasterGestureSubscriptionController {
     tapCancelCallbacks.add(callback);
     return callback;
   }
+
+  Function listenForLongPress(LayerGestureLongPressCallback callback) {
+    longPressCallbacks.add(callback);
+    return callback;
+  }
 }
 
 class FlutterMapLayerGestureListener extends StatefulWidget {
@@ -73,7 +81,7 @@ class FlutterMapLayerGestureListener extends StatefulWidget {
   final LayerGestureDragStartCallback? onDragStart;
   final LayerGestureDragUpdateCallback? onDragUpdate;
   final LayerGestureDragEndCallback? onDragEnd;
-  final LayerGestureTapUpCallback? onLongPress;
+  final LayerGestureLongPressCallback? onLongPress;
   final LayerGestureTapDownCallback? onDoubleTap;
   final VoidCallback? onTapCancel;
   final Widget child;
@@ -129,6 +137,10 @@ class _FlutterMapLayerGestureListenerState
     if (widget.onTapCancel != null) {
       _allListeners.add(FlutterMapMasterGestureDetector.of(context)
           .listenForTapCancel(widget.onTapCancel!));
+    }
+    if (widget.onLongPress != null) {
+      _allListeners.add(FlutterMapMasterGestureDetector.of(context)
+          .listenForLongPress(widget.onLongPress!));
     }
     super.initState();
   }
@@ -222,7 +234,11 @@ class _FlutterMapMasterGestureDetectorState
       onDoubleTapCancel: () {
         _lastDoubleTapDown = null;
       },
-      onLongPress: () {},
+      onLongPressStart: (deets) {
+        for (var element in longPressCallbacks) {
+          element(deets);
+        }
+      },
       onTapCancel: () {
         for (var element in tapCancelCallbacks) {
           element();
