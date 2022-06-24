@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/core/bounds.dart';
@@ -236,7 +238,12 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
       builder: (BuildContext context, AsyncSnapshot<int?> snapshot) {
         var multiMarkers = <Widget>[];
         final sameZoom = widget.map.zoom == lastZoom;
-        for (var marker in widget.markerLayerOptions.multiMarkers) {
+        for (var marker in _pxCache.keys) {
+          if (!widget.markerLayerOptions.multiMarkers.contains(marker)) {
+            _pxCache.remove(marker);
+            _boundsCache.remove(marker);
+            continue;
+          }
           for (var j = 0; j < marker.points.length; j++) {
             // Decide whether to use cached point or calculate it
             final useCache =
