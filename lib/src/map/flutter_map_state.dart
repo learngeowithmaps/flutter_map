@@ -89,10 +89,12 @@ class FlutterMapState extends MapGestureMixin {
         mapState: mapState,
         child: FlutterMapMasterGestureDetector(
           onLongPress: (event) {
-            handleLongPress(TapPosition(
-              event.globalPosition,
-              event.localPosition,
-            ));
+            handleLongPress(
+              TapPosition(
+                event.globalPosition,
+                event.localPosition,
+              ),
+            );
             return true;
           },
           onDoubleTap: (event) {
