@@ -7,6 +7,8 @@ typedef LayerGestureDragUpdateCallback = bool Function(
 typedef LayerGestureDragEndCallback = bool Function(ScaleEndDetails details);
 typedef LayerGestureTapDownCallback = bool Function(TapDownDetails details);
 typedef LayerGestureTapUpCallback = bool Function(TapUpDetails details);
+typedef LayerGestureLongPressStartCallback = bool Function(
+    LongPressStartDetails details);
 
 abstract class MasterGestureSubscriptionController {
   List<LayerGestureDragStartCallback> dragStartCallbacks = [];
@@ -155,7 +157,7 @@ class FlutterMapMasterGestureDetector extends StatefulWidget {
   final LayerGestureDragStartCallback? onDragStart;
   final LayerGestureDragUpdateCallback? onDragUpdate;
   final LayerGestureDragEndCallback? onDragEnd;
-  final LayerGestureTapUpCallback? onLongPress;
+  final LayerGestureLongPressStartCallback? onLongPress;
   final LayerGestureTapDownCallback? onDoubleTap;
   final VoidCallback? onTapCancel;
   const FlutterMapMasterGestureDetector({
@@ -222,7 +224,7 @@ class _FlutterMapMasterGestureDetectorState
       onDoubleTapCancel: () {
         _lastDoubleTapDown = null;
       },
-      onLongPress: () {},
+      onLongPressStart: widget.onLongPress,
       onTapCancel: () {
         for (var element in tapCancelCallbacks) {
           element();
