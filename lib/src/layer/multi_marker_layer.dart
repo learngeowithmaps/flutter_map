@@ -279,8 +279,6 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
                 left: pos.x - width,
                 top: pos.y - height,
                 child: Container(
-                  color:
-                      marker == _draggingMultiMarker ? Colors.blueGrey : null,
                   child: markerWidget,
                 ),
               ),

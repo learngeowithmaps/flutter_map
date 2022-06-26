@@ -203,7 +203,7 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
             final tapped = _tapped(
               details.localPosition,
               context,
-              false,
+              true,
             );
             if (tapped == null) {
               return false;

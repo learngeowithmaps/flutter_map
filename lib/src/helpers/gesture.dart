@@ -208,7 +208,6 @@ class _FlutterMapMasterGestureDetectorState
         if (!_handle(dragUpdateCallbacks, deets)) {
           widget.onDragUpdate?.call(deets);
         }
-        paint(deets.localFocalPoint);
       },
       onScaleEnd: (deets) {
         if (!_handle(dragEndCallbacks, deets)) {
@@ -246,7 +245,6 @@ class _FlutterMapMasterGestureDetectorState
             widget.onTap?.call(deets);
           }
         }
-        paint(deets.localPosition);
       },
       child: widget.child,
     );
@@ -266,110 +264,8 @@ class _FlutterMapMasterGestureDetectorState
   TapDownDetails? _lastTapDown, _lastDoubleTapDown;
   TapUpDetails? _lastTapUp;
 
-  final painter = PointerPainter();
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        _gestureDetector,
-        CustomPaint(
-          key: ValueKey(
-            DateTime.now(),
-          ),
-          foregroundPainter: painter,
-        )
-      ],
-    );
-  }
-
-  void paint(Offset paintLocation) async {
-    setState(() {
-      painter.pointLocation = Offset(paintLocation.dx, paintLocation.dy);
-    });
-    await Future.delayed(
-      const Duration(
-        milliseconds: 600,
-      ),
-    );
-    if (mounted) {
-      setState(() {
-        painter.pointLocation = null;
-      });
-    }
+    return _gestureDetector;
   }
 }
-
-class PointerPainter extends CustomPainter {
-  Offset? pointLocation;
-  final radius = 5.0;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-    if (pointLocation == null) {
-      paint.color = Colors.transparent;
-      canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
-      return;
-    } else {
-      paint.color = Colors.black;
-      canvas.drawCircle(
-        pointLocation!,
-        radius,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    throw true;
-  }
-}
-
-/* class GestureFeedback extends StatefulWidget {
-  final Offset? position;
-  const GestureFeedback({
-    Key? key,
-    required this.position,
-  }) : super(key: key);
-
-  @override
-  State<GestureFeedback> createState() => _GestureFeedbackState();
-}
-
-class _GestureFeedbackState extends State<GestureFeedback> {
-  Offset? _position;
-  @override
-  void initState() {
-    _position = widget.position;
-    super.initState();
-    if (widget.position != null) {
-      Future.delayed(
-        const Duration(milliseconds: 800),
-        () {
-          setState(() {
-            _position = null;
-          });
-        },
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_position == null) {
-      return SizedBox();
-    }
-    return Positioned(
-      left: widget.position!.dx,
-      top: widget.position!.dx,
-      width: 12,
-      height: 12,
-      child: Container(
-        color: Colors.green,
-      ),
-    );
-  }
-}
- */
