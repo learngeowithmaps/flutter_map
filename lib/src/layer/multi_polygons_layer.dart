@@ -186,7 +186,7 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
             _draggingPolygon = _draggingPolygon!.copyWithNewDelta(delta);
             widget.polygonOpts.polygons.add(_draggingPolygon!);
 
-            widget.polygonOpts.doLayerRebuild();
+            setState(() {});
             return true;
           },
           onDragEnd: (details) {
