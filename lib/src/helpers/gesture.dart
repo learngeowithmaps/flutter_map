@@ -193,12 +193,27 @@ class _FlutterMapMasterGestureDetectorState
     with MasterGestureSubscriptionController {
   MasterGestureSubscriptionController get getController => this;
 
-  late final Widget _gestureDetector;
-  Offset? _lastPosition;
-
   @override
   void initState() {
-    _gestureDetector = GestureDetector(
+    super.initState();
+  }
+
+  bool _handle<CallbackType extends Function, DetailsType>(
+      List<CallbackType> callabacks, DetailsType deets) {
+    for (var callback in callabacks.reversed) {
+      if (callback(deets)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  TapDownDetails? _lastTapDown, _lastDoubleTapDown;
+  TapUpDetails? _lastTapUp;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
       onScaleStart: (deets) {
         if (!_handle(dragStartCallbacks, deets)) {
           widget.onDragStart?.call(deets);
@@ -248,24 +263,5 @@ class _FlutterMapMasterGestureDetectorState
       },
       child: widget.child,
     );
-    super.initState();
-  }
-
-  bool _handle<CallbackType extends Function, DetailsType>(
-      List<CallbackType> callabacks, DetailsType deets) {
-    for (var callback in callabacks.reversed) {
-      if (callback(deets)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  TapDownDetails? _lastTapDown, _lastDoubleTapDown;
-  TapUpDetails? _lastTapUp;
-
-  @override
-  Widget build(BuildContext context) {
-    return _gestureDetector;
   }
 }
