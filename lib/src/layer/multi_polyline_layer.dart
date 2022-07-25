@@ -42,9 +42,11 @@ typedef MultiPolylineBuilder = Widget Function(
 class MultiPolyline extends MapElement<MultiPolylineBuilder, MultiPolyline> {
   final List<List<LatLng>> points;
   final List<List<Offset>> offsets = [];
+  final int tolerance;
   LatLngBounds? boundingBox;
 
   MultiPolyline({
+    this.tolerance = 5000,
     Function(MultiPolyline)? onTap,
     required String id,
     required MultiPolylineBuilder builder,
@@ -167,7 +169,7 @@ class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
       if (valid &&
           p.points.any(
             (points) => PolygonUtil.isLocationOnPath(location, points, true,
-                tolerance: 50000 * (1 / widget.map.zoom)),
+                tolerance: p.tolerance * (1 / widget.map.zoom)),
           )) {
         if ((p.onDrag != null || p.onTap != null)) {
           return p;
