@@ -28,7 +28,7 @@ class PolylineLayerOptions extends LayerOptions<Polyline> {
   }
 }
 
-typedef void PolylineCallback(Marker);
+typedef Null PolylineCallback(Marker);
 
 typedef PolylineBuilder = Widget Function(
   BuildContext context,
@@ -52,7 +52,8 @@ class Polyline extends MapElement<PolylineBuilder, Polyline> {
             id: id,
             onDrag: null,
             onTap: onTap,
-            delta: LatLng.zero());
+            delta: LatLng.zero(),
+            zIndex: 0);
 
   @override
   Polyline copyWithNewDelta(LatLng location) {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/plugin_api.dart';
 import 'package:flutter_map/src/gestures/gestures.dart';
 import 'package:flutter_map/src/helpers/gesture.dart';
 import 'package:flutter_map/src/layer/group_layer.dart';
@@ -211,6 +212,9 @@ class FlutterMapState extends MapGestureMixin {
     }
     if (options is OverlayImageLayerOptions) {
       return OverlayImageLayer(options, mapState, _merge(options));
+    }
+    if (options is AllElementsLayerOptions) {
+      return AllElementsLayer(options, mapState, _merge(options));
     }
     throw (StateError("""
 Can't find correct layer for $options. Perhaps when you create your FlutterMap you need something like this:

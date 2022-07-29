@@ -44,14 +44,10 @@ class MultiMarkerLayerOptions extends LayerOptions<MultiMarker> {
     this.rotateOrigin,
     this.rotateAlignment = Alignment.center,
     Stream<Null>? rebuild,
-    LayerElementDragCallback? onLayerElementDrag,
   }) : super(
           key: key,
           rebuild: rebuild,
         );
-
-  @override
-  void handleDrag(_) {}
 }
 
 typedef MultiMarkerCallback = void Function(MultiMarker);
@@ -96,15 +92,18 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
     this.rotateOrigin,
     this.rotateAlignment,
     AnchorPos? anchorPos,
-    Function(MultiMarker)? onTap,
-    Function(MultiMarker)? onDrag,
+    Null Function(MultiMarker)? onTap,
+    Null Function(MultiMarker)? onDrag,
+    int zIndex = 0,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
-            id: id,
-            builder: builder,
-            onDrag: onDrag,
-            onTap: onTap,
-            delta: LatLng.zero());
+          id: id,
+          builder: builder,
+          onDrag: onDrag,
+          onTap: onTap,
+          delta: LatLng.zero(),
+          zIndex: zIndex,
+        );
 
   CustomPoint sw(CustomPoint pxPoint) => CustomPoint(
       pxPoint.x + (width - anchor.left), pxPoint.y - (height - anchor.top));
@@ -124,6 +123,7 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
       id: id,
       onDrag: onDrag,
       onTap: onTap,
+      zIndex: zIndex,
     );
   }
 }

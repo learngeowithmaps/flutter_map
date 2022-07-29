@@ -112,7 +112,7 @@ enum AnchorAlign {
   bottom,
   center,
 }
-typedef MarkerCallback = void Function(Marker);
+typedef MarkerCallback = Null Function(Marker);
 
 class Marker extends MapElement<WidgetBuilder, Marker> {
   final LatLng point;
@@ -162,7 +162,8 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
             builder: builder,
             onDrag: onDrag,
             onTap: onTap,
-            delta: LatLng.zero());
+            delta: LatLng.zero(),
+            zIndex: 0);
   @override
   Marker copyWithNewDelta(LatLng point) {
     return Marker(

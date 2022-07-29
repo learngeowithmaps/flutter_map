@@ -92,10 +92,11 @@ extension LatLngHelper on LatLng {
 
 abstract class MapElement<WidgetType, MapElementType> {
   ///used in comparing
-  final Function(MapElementType)? onTap, onDrag;
+  final Null Function(MapElementType)? onTap, onDrag;
   final String id;
   final WidgetType builder;
   final LatLng delta;
+  final int zIndex;
 
   MapElement({
     required this.delta,
@@ -103,6 +104,7 @@ abstract class MapElement<WidgetType, MapElementType> {
     required this.onDrag,
     required this.id,
     required this.builder,
+    required this.zIndex,
   });
 
   MapElementType copyWithNewDelta(LatLng location);

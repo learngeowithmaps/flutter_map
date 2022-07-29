@@ -51,14 +51,17 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
     required String id,
     required MultiPolygonBuilder builder,
     required this.points,
-    Function(MultiPolygon)? onTap,
-    Function(MultiPolygon)? onDrag,
+    Null Function(MultiPolygon)? onTap,
+    Null Function(MultiPolygon)? onDrag,
+    int zIndex = 0,
   }) : super(
-            builder: builder,
-            id: id,
-            onDrag: onDrag,
-            onTap: onTap,
-            delta: LatLng.zero());
+          builder: builder,
+          id: id,
+          onDrag: onDrag,
+          onTap: onTap,
+          delta: LatLng.zero(),
+          zIndex: zIndex,
+        );
   @override
   MultiPolygon copyWithNewDelta(LatLng delta) {
     final newPoints = () {
@@ -80,6 +83,7 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
       builder: builder,
       onDrag: onDrag,
       onTap: onTap,
+      zIndex: zIndex,
     );
   }
 }

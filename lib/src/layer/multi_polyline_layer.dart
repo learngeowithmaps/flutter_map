@@ -47,16 +47,19 @@ class MultiPolyline extends MapElement<MultiPolylineBuilder, MultiPolyline> {
 
   MultiPolyline({
     this.tolerance = 5000,
-    Function(MultiPolyline)? onTap,
+    Null Function(MultiPolyline)? onTap,
     required String id,
     required MultiPolylineBuilder builder,
     required this.points,
+    int zIndex = 0,
   }) : super(
-            builder: builder,
-            id: id,
-            onDrag: null,
-            onTap: onTap,
-            delta: LatLng.zero());
+          builder: builder,
+          id: id,
+          onDrag: null,
+          onTap: onTap,
+          delta: LatLng.zero(),
+          zIndex: zIndex,
+        );
 
   @override
   MultiPolyline copyWithNewDelta(LatLng location) {
@@ -158,12 +161,13 @@ class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
     );
   }
 
-  MultiPolyline? _tapped(Offset offset, BuildContext context, bool forTap) {
+  MapElement? _tapped(Offset offset, BuildContext context, bool forTap) {
     final location = widget.map.offsetToLatLng(
       offset,
       context.size!.width,
       context.size!.height,
     );
+    MapElement? polyline;
     for (var p in widget.polylineOpts.multiPolylines) {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid &&
@@ -172,11 +176,12 @@ class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
                 tolerance: p.tolerance * (1 / widget.map.zoom)),
           )) {
         if ((p.onDrag != null || p.onTap != null)) {
-          return p;
+          polyline = p;
+          break;
         }
       }
     }
-    return null;
+    return polyline;
   }
 
   void _fillOffsets(

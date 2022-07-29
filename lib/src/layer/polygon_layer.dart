@@ -33,7 +33,7 @@ class PolygonLayerOptions extends LayerOptions<Polygon> {
   }
 }
 
-typedef PolygonCallback = void Function(Polygon);
+typedef PolygonCallback = Null Function(Polygon);
 
 class Polygon extends MapElement<PolygonBuilder, Polygon> {
   final List<LatLng> points;
@@ -57,7 +57,8 @@ class Polygon extends MapElement<PolygonBuilder, Polygon> {
             id: id,
             onDrag: onDrag,
             onTap: onTap,
-            delta: LatLng.zero());
+            delta: LatLng.zero(),
+            zIndex: 0);
   @override
   Polygon copyWithNewPoint(LatLng point) {
     final oldCenter = LatLngHelper.centerOfListOfPoints(points);

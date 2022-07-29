@@ -134,12 +134,9 @@ class _HomePageState extends State<HomePage> {
                       // NetworkTileProvider or CachedNetworkTileProvider
                       tileProvider: NonCachingNetworkTileProvider(),
                     ),
-                    MultiPolygonLayerOptions(
-                      polygons: polygons,
-                      rebuild: polygonRebuild.stream,
-                    ),
-                    MultiMarkerLayerOptions(
+                    AllElementsLayerOptions(
                       multiMarkers: markers,
+                      multiPolygons: polygons,
                     ),
                   ],
                 ),
