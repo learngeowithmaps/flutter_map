@@ -410,7 +410,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       context.size!.height,
     );
 
-    MapElement? polygon, polyline, marker;
+    List<MapElement> all = [];
     for (var p in widget.options.multiPolygons) {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid &&
@@ -422,8 +422,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
             ),
           )) {
         if ((p.onDrag != null || p.onTap != null)) {
-          polygon = p;
-          break;
+          all.add(p);
         }
       }
     }
@@ -435,8 +434,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
                 tolerance: p.tolerance * (1 / widget.map.zoom)),
           )) {
         if ((p.onDrag != null || p.onTap != null)) {
-          polyline = p;
-          break;
+          all.add(p);
         }
       }
     }
@@ -445,16 +443,10 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       final allBounds = _boundsCache[m]!;
       for (var bounds in allBounds) {
         if (valid && PolygonUtil.containsLocation(location, bounds, true)) {
-          marker = m;
-          break;
+          all.add(m);
         }
       }
     }
-    final all = [
-      if (polygon != null) polygon,
-      if (polyline != null) polyline,
-      if (marker != null) marker
-    ];
     if (all.isNotEmpty) {
       if (all.length == 1) {
         return all.first;
