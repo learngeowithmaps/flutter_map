@@ -460,7 +460,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
         return all.first;
       } else {
         all.sort((a, b) => a.zIndex - b.zIndex);
-        return all.first;
+        return all.last;
       }
     } else {
       return null;
