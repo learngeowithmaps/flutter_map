@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
+import 'package:flutter_map/src/layer/multi_overlay_image_layer.dart';
 import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
 
 class AllElementsLayerOptions extends LayerOptions<MultiPolygon> {
@@ -18,11 +19,13 @@ class AllElementsLayerOptions extends LayerOptions<MultiPolygon> {
   final Offset? rotateOrigin;
   final AlignmentGeometry? rotateAlignment;
   final bool polylineCulling;
+  final List<MultiOverlayImage> overlayImages;
 
   AllElementsLayerOptions({
     Key? key,
     this.multiPolygons = const [],
     this.multiPolylines = const [],
+    required this.overlayImages,
     this.polylineCulling = false,
     this.polygonCulling = false,
 
@@ -396,11 +399,45 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               ...polygons,
               ...multiPolylines,
               ...multiMarkers,
+              ..._positionedForOverlay()
             ],
           ),
         );
       },
     );
+  }
+
+  List<Positioned> _positionedForOverlay() {
+    final returnable = <Positioned>[];
+    for (var overlayImage in widget.options.overlayImages) {
+      final zoomScale = widget.map.getZoomScale(
+          widget.map.zoom, widget.map.zoom); // TODO replace with 1?
+      final pixelOrigin = widget.map.getPixelOrigin();
+      final upperLeftPixel = widget.map
+              .project(overlayImage.bounds.northWest)
+              .multiplyBy(zoomScale) -
+          pixelOrigin;
+      final bottomRightPixel = widget.map
+              .project(overlayImage.bounds.southEast)
+              .multiplyBy(zoomScale) -
+          pixelOrigin;
+      returnable.add(
+        Positioned(
+          left: upperLeftPixel.x.toDouble(),
+          top: upperLeftPixel.y.toDouble(),
+          width: (bottomRightPixel.x - upperLeftPixel.x).toDouble(),
+          height: (bottomRightPixel.y - upperLeftPixel.y).toDouble(),
+          child: Image(
+            image: overlayImage.imageProvider,
+            fit: BoxFit.fill,
+            color: Color.fromRGBO(255, 255, 255, overlayImage.opacity),
+            colorBlendMode: BlendMode.modulate,
+            gaplessPlayback: overlayImage.gaplessPlayback,
+          ),
+        ),
+      );
+    }
+    return returnable;
   }
 
   MapElement? _tapped(Offset offset, BuildContext context, bool forTap) {
@@ -444,6 +481,15 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       for (var bounds in allBounds) {
         if (valid && PolygonUtil.containsLocation(location, bounds, true)) {
           all.add(m);
+        }
+      }
+    }
+
+    for (var p in widget.options.overlayImages) {
+      final valid = forTap ? p.onTap != null : p.onDrag != null;
+      if (valid && p.containsLocation(location)) {
+        if ((p.onDrag != null || p.onTap != null)) {
+          return p;
         }
       }
     }

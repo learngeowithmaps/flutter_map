@@ -86,6 +86,12 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
       zIndex: zIndex,
     );
   }
+
+  @override
+  bool containsLocation(LatLng location) {
+    // TODO: implement containsLocation
+    throw UnimplementedError();
+  }
 }
 
 class MultiPolygonLayerWidget extends StatelessWidget {
