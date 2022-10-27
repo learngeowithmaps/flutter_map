@@ -109,7 +109,9 @@ abstract class MapElement<WidgetType, MapElementType> {
 
   MapElementType copyWithNewDelta(LatLng location);
 
-  bool containsLocation(LatLng location);
+  bool containsLocation(LatLng location) {
+    return false;
+  }
 
   bool equals(dynamic other) {
     return other is MapElement && other.id == id;

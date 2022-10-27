@@ -137,6 +137,20 @@ class _HomePageState extends State<HomePage> {
                     AllElementsLayerOptions(
                       multiMarkers: markers,
                       multiPolygons: polygons,
+                      overlayImages: [
+                        MultiOverlayImage(
+                            bounds: LatLngBounds(
+                              LatLng(28.7041, 77.1025),
+                              LatLng(22.3193, 114.1694),
+                            ),
+                            builder: (context) {
+                              return Image.asset(
+                                  "assets/map/anholt_osmbright/12/2179/1260.png");
+                            },
+                            id: "hdh",
+                            imageProvider: AssetImage(
+                                "assets/map/anholt_osmbright/12/2179/1260.png"))
+                      ],
                     ),
                   ],
                 ),
