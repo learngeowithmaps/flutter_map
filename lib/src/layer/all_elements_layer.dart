@@ -19,13 +19,13 @@ class AllElementsLayerOptions extends LayerOptions<MultiPolygon> {
   final Offset? rotateOrigin;
   final AlignmentGeometry? rotateAlignment;
   final bool polylineCulling;
-  final List<MultiOverlayImage> overlayImages;
+  final List<MultiOverlayImage> multiOverlayImages;
 
   AllElementsLayerOptions({
     Key? key,
     this.multiPolygons = const [],
     this.multiPolylines = const [],
-    required this.overlayImages,
+    required this.multiOverlayImages,
     this.polylineCulling = false,
     this.polygonCulling = false,
 
@@ -358,6 +358,30 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               widget.options.doLayerRebuild();
               return true;
             }
+            if (_draggingMapElement is MultiOverlayImage) {
+              final location = widget.map.offsetToLatLng(
+                details.localFocalPoint - details.focalPointDelta,
+                context.size!.width,
+                context.size!.height,
+              );
+              final location2 = widget.map.offsetToLatLng(
+                details.localFocalPoint,
+                context.size!.width,
+                context.size!.height,
+              );
+              final delta = location.difference(location2);
+
+              final done = widget.options.multiOverlayImages
+                  .remove(_draggingMapElement!);
+              _draggingMapElement =
+                  _draggingMapElement!.copyWithNewDelta(delta);
+              widget.options.multiOverlayImages
+                  .add(_draggingMapElement! as MultiOverlayImage);
+              //generatePxCache();
+              //widget.options.doLayerRebuild();
+              setState(() {});
+              return true;
+            }
             return false;
           },
           onDragEnd: (details) {
@@ -409,7 +433,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
 
   List<Positioned> _positionedForOverlay() {
     final returnable = <Positioned>[];
-    for (var overlayImage in widget.options.overlayImages) {
+    for (var overlayImage in widget.options.multiOverlayImages) {
       final zoomScale = widget.map.getZoomScale(
           widget.map.zoom, widget.map.zoom); // TODO replace with 1?
       final pixelOrigin = widget.map.getPixelOrigin();
@@ -447,7 +471,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       context.size!.height,
     );
 
-    List<MapElement> all = [];
+    var all = <MapElement>[];
     for (var p in widget.options.multiPolygons) {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid &&
@@ -485,11 +509,11 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       }
     }
 
-    for (var p in widget.options.overlayImages) {
+    for (var p in widget.options.multiOverlayImages) {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid && p.containsLocation(location)) {
         if ((p.onDrag != null || p.onTap != null)) {
-          return p;
+          all.add(p);
         }
       }
     }

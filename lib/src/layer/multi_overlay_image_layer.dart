@@ -48,7 +48,7 @@ class MultiOverlayImage extends MapElement<WidgetBuilder, MultiOverlayImage> {
   @override
   MultiOverlayImage copyWithNewDelta(LatLng location) {
     return MultiOverlayImage(
-      bounds: copyBoundsWithDelta(delta, bounds),
+      bounds: copyBoundsWithDelta(location, bounds),
       imageProvider: imageProvider,
       id: id,
       builder: builder,

@@ -137,8 +137,10 @@ class _HomePageState extends State<HomePage> {
                     AllElementsLayerOptions(
                       multiMarkers: markers,
                       multiPolygons: polygons,
-                      overlayImages: [
+                      multiOverlayImages: [
                         MultiOverlayImage(
+                            onDrag: (p0) {},
+                            onTap: (p0) {},
                             bounds: LatLngBounds(
                               LatLng(28.7041, 77.1025),
                               LatLng(22.3193, 114.1694),
