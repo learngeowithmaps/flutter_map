@@ -431,8 +431,8 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
     );
   }
 
-  List<Positioned> _positionedForOverlay() {
-    final returnable = <Positioned>[];
+  List<Widget> _positionedForOverlay() {
+    final returnable = <Widget>[];
     for (var overlayImage in widget.options.multiOverlayImages) {
       final zoomScale = widget.map.getZoomScale(
           widget.map.zoom, widget.map.zoom); // TODO replace with 1?
@@ -446,7 +446,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               .multiplyBy(zoomScale) -
           pixelOrigin;
       returnable.add(
-        Positioned(
+        overlayImage.builder(Positioned(
           left: upperLeftPixel.x.toDouble(),
           top: upperLeftPixel.y.toDouble(),
           width: (bottomRightPixel.x - upperLeftPixel.x).toDouble(),
@@ -458,7 +458,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
             colorBlendMode: BlendMode.modulate,
             gaplessPlayback: overlayImage.gaplessPlayback,
           ),
-        ),
+        )),
       );
     }
     return returnable;

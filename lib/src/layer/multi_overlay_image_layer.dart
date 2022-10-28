@@ -20,7 +20,10 @@ class MultiOverlayImageLayerOptions extends LayerOptions {
         );
 }
 
-class MultiOverlayImage extends MapElement<WidgetBuilder, MultiOverlayImage> {
+typedef MutiOverlayImageBuilder = Widget Function(Widget image);
+
+class MultiOverlayImage
+    extends MapElement<MutiOverlayImageBuilder, MultiOverlayImage> {
   final LatLngBounds bounds;
   final ImageProvider imageProvider;
   final double opacity;
@@ -32,7 +35,7 @@ class MultiOverlayImage extends MapElement<WidgetBuilder, MultiOverlayImage> {
       this.opacity = 1.0,
       this.gaplessPlayback = false,
       required String id,
-      required WidgetBuilder builder,
+      required MutiOverlayImageBuilder builder,
       Null Function(MultiOverlayImage)? onTap,
       Null Function(MultiOverlayImage)? onDrag,
       int zIndex = 0,
