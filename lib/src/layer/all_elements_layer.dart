@@ -446,19 +446,21 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               .multiplyBy(zoomScale) -
           pixelOrigin;
       returnable.add(
-        overlayImage.builder(Positioned(
+        Positioned(
           left: upperLeftPixel.x.toDouble(),
           top: upperLeftPixel.y.toDouble(),
           width: (bottomRightPixel.x - upperLeftPixel.x).toDouble(),
           height: (bottomRightPixel.y - upperLeftPixel.y).toDouble(),
-          child: Image(
-            image: overlayImage.imageProvider,
-            fit: BoxFit.fill,
-            color: Color.fromRGBO(255, 255, 255, overlayImage.opacity),
-            colorBlendMode: BlendMode.modulate,
-            gaplessPlayback: overlayImage.gaplessPlayback,
+          child: overlayImage.builder(
+            Image(
+              image: overlayImage.imageProvider,
+              fit: BoxFit.fill,
+              color: Color.fromRGBO(255, 255, 255, overlayImage.opacity),
+              colorBlendMode: BlendMode.modulate,
+              gaplessPlayback: overlayImage.gaplessPlayback,
+            ),
           ),
-        )),
+        ),
       );
     }
     return returnable;
