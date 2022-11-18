@@ -420,10 +420,10 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
           },
           child: Stack(
             children: [
+              ..._positionedForOverlay(),
               ...polygons,
               ...multiPolylines,
               ...multiMarkers,
-              ..._positionedForOverlay()
             ],
           ),
         );
