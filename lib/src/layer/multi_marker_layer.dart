@@ -57,6 +57,8 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
   final double width;
   final double height;
   final Anchor anchor;
+  final double minZoom;  // to controler visiblilty
+
 
   /// If true marker will be counter rotated to the map rotation
   final bool? rotate;
@@ -91,6 +93,8 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
     this.rotate,
     this.rotateOrigin,
     this.rotateAlignment,
+    this.minZoom = 0.0, // Initialize minZoom with a default value
+
     AnchorPos? anchorPos,
     Null Function(MultiMarker)? onTap,
     Null Function(MultiMarker)? onDrag,
@@ -233,13 +237,17 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
 
   @override
   Widget build(BuildContext context) {
+     
+
     return StreamBuilder<int?>(
       stream: widget.stream, // a Stream<int> or null
       builder: (BuildContext context, AsyncSnapshot<int?> snapshot) {
         var multiMarkers = <Widget>[];
+        final currentZoom = widget.map.zoom;
         final sameZoom = widget.map.zoom == lastZoom;
         for (var marker in widget.markerLayerOptions.multiMarkers) {
-          for (var j = 0; j < marker.points.length; j++) {
+         if (currentZoom > marker.minZoom) {
+            for (var j = 0; j < marker.points.length; j++) {
             // Decide whether to use cached point or calculate it
             final useCache =
                 marker.equals(_draggingMultiMarker) ? false : sameZoom;
@@ -284,6 +292,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
               ),
             );
           }
+        }
         }
         lastZoom = widget.map.zoom;
         return FlutterMapLayerGestureListener(
