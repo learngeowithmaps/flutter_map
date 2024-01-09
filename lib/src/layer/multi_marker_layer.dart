@@ -57,7 +57,7 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
   final double width;
   final double height;
   final Anchor anchor;
-  final double minZoom;  // to controler visiblilty
+  final double maxZoomVisibility;  // to controler visiblilty
 
 
   /// If true marker will be counter rotated to the map rotation
@@ -93,8 +93,7 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
     this.rotate,
     this.rotateOrigin,
     this.rotateAlignment,
-    this.minZoom = 0.0, // Initialize minZoom with a default value
-
+    this.maxZoomVisibility = double.infinity,
     AnchorPos? anchorPos,
     Null Function(MultiMarker)? onTap,
     Null Function(MultiMarker)? onDrag,
@@ -246,7 +245,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
         final currentZoom = widget.map.zoom;
         final sameZoom = widget.map.zoom == lastZoom;
         for (var marker in widget.markerLayerOptions.multiMarkers) {
-         if (currentZoom > marker.minZoom) {
+        if (currentZoom <= marker.maxZoomVisibility) {
             for (var j = 0; j < marker.points.length; j++) {
             // Decide whether to use cached point or calculate it
             final useCache =
