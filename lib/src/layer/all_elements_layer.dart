@@ -200,51 +200,55 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
         var multiMarkers = <Widget>[];
         final sameZoom = widget.map.zoom == lastZoom;
         for (var marker in widget.options.multiMarkers) {
-          for (var j = 0; j < marker.points.length; j++) {
-            // Decide whether to use cached point or calculate it
-            final useCache =
-                marker.equals(_draggingMapElement) ? false : sameZoom;
-            if (!_pxCache.containsKey(marker) || !useCache) {
-              generatePxCache(marker);
-            }
-            var pxPoint = _pxCache[marker]![j];
-
-            final width = marker.width - marker.anchor.left;
-            final height = marker.height - marker.anchor.top;
-            var sw = CustomPoint(pxPoint.x + width, pxPoint.y - height);
-            var ne = CustomPoint(pxPoint.x - width, pxPoint.y + height);
-
-            if (!widget.map.pixelBounds.containsPartialBounds(Bounds(sw, ne))) {
-              continue;
-            }
-
-            final pos = pxPoint - widget.map.getPixelOrigin();
-            final markerWidget = (marker.rotate ??
-                    widget.options.rotate ??
-                    false)
-                // Counter rotated marker to the map rotation
-                ? Transform.rotate(
-                    angle: -widget.map.rotationRad,
-                    origin: marker.rotateOrigin ?? widget.options.rotateOrigin,
-                    alignment: marker.rotateAlignment ??
-                        widget.options.rotateAlignment,
-                    child: marker.builder(context),
-                  )
-                : marker.builder(context);
-
-            multiMarkers.add(
-              Positioned(
-                key: ValueKey(marker.id + marker.points[j].toSexagesimal()),
-                width: marker.width,
-                height: marker.height,
-                left: pos.x - width,
-                top: pos.y - height,
-                child: Container(
-                  child: markerWidget,
-                ),
-              ),
-            );
+              final isVisible = (marker.maxZoomVisibility ?? double.negativeInfinity) <= widget.map.zoom;
+      if(isVisible){
+        for (var j = 0; j < marker.points.length; j++) {
+          // Decide whether to use cached point or calculate it
+          final useCache =
+          marker.equals(_draggingMapElement) ? false : sameZoom;
+          if (!_pxCache.containsKey(marker) || !useCache) {
+            generatePxCache(marker);
           }
+          var pxPoint = _pxCache[marker]![j];
+
+          final width = marker.width - marker.anchor.left;
+          final height = marker.height - marker.anchor.top;
+          var sw = CustomPoint(pxPoint.x + width, pxPoint.y - height);
+          var ne = CustomPoint(pxPoint.x - width, pxPoint.y + height);
+
+          if (!widget.map.pixelBounds.containsPartialBounds(Bounds(sw, ne))) {
+            continue;
+          }
+
+          final pos = pxPoint - widget.map.getPixelOrigin();
+          final markerWidget = (marker.rotate ??
+              widget.options.rotate ??
+              false)
+          // Counter rotated marker to the map rotation
+              ? Transform.rotate(
+            angle: -widget.map.rotationRad,
+            origin: marker.rotateOrigin ?? widget.options.rotateOrigin,
+            alignment: marker.rotateAlignment ??
+                widget.options.rotateAlignment,
+            child: marker.builder(context),
+          )
+              : marker.builder(context);
+
+          multiMarkers.add(
+            Positioned(
+              key: ValueKey(marker.id + marker.points[j].toSexagesimal()),
+              width: marker.width,
+              height: marker.height,
+              left: pos.x - width,
+              top: pos.y - height,
+              child: Container(
+                child: markerWidget,
+              ),
+            ),
+          );
+        }
+      }
+         
         }
         lastZoom = widget.map.zoom;
 

@@ -242,11 +242,9 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
       stream: widget.stream, // a Stream<int> or null
       builder: (BuildContext context, AsyncSnapshot<int?> snapshot) {
         var multiMarkers = <Widget>[];
-        final currentZoom = widget.map.zoom;
         final sameZoom = widget.map.zoom == lastZoom;
         for (var marker in widget.markerLayerOptions.multiMarkers) {
-        if (currentZoom <= marker.maxZoomVisibility) {
-            for (var j = 0; j < marker.points.length; j++) {
+         for (var j = 0; j < marker.points.length; j++) {
             // Decide whether to use cached point or calculate it
             final useCache =
                 marker.equals(_draggingMultiMarker) ? false : sameZoom;
@@ -291,7 +289,6 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
               ),
             );
           }
-        }
         }
         lastZoom = widget.map.zoom;
         return FlutterMapLayerGestureListener(
