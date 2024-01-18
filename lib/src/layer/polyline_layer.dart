@@ -28,7 +28,9 @@ class PolylineLayerOptions extends LayerOptions<Polyline> {
   }
 }
 
-typedef Null PolylineCallback(Marker);
+typedef Null PolylineCallback(marker);
+
+
 
 typedef PolylineBuilder = Widget Function(
   BuildContext context,

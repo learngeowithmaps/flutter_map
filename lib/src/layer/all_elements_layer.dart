@@ -1,10 +1,6 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/plugin_api.dart';
-import 'package:flutter_map/src/layer/multi_overlay_image_layer.dart';
 import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
 
 class AllElementsLayerOptions extends LayerOptions<MultiPolygon> {
@@ -200,7 +196,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
         var multiMarkers = <Widget>[];
         final sameZoom = widget.map.zoom == lastZoom;
         for (var marker in widget.options.multiMarkers) {
-              final isVisible = (marker.maxZoomVisibility ?? double.negativeInfinity) <= widget.map.zoom;
+              final isVisible = (marker.maxZoomVisibility) <= widget.map.zoom;
       if(isVisible){
         for (var j = 0; j < marker.points.length; j++) {
           // Decide whether to use cached point or calculate it
@@ -352,8 +348,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               );
               final delta = location.difference(location2);
 
-              final done =
-                  widget.options.multiMarkers.remove(_draggingMapElement!);
+              // final done = widget.options.multiMarkers.remove(_draggingMapElement!);
               _draggingMapElement =
                   _draggingMapElement!.copyWithNewDelta(delta);
               widget.options.multiMarkers
@@ -375,10 +370,8 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               );
               final delta = location.difference(location2);
 
-              final done = widget.options.multiOverlayImages
-                  .remove(_draggingMapElement!);
-              _draggingMapElement =
-                  _draggingMapElement!.copyWithNewDelta(delta);
+              // final done = widget.options.multiOverlayImages.remove(_draggingMapElement!);
+              _draggingMapElement = _draggingMapElement!.copyWithNewDelta(delta);
               widget.options.multiOverlayImages
                   .add(_draggingMapElement! as MultiOverlayImage);
               //generatePxCache();

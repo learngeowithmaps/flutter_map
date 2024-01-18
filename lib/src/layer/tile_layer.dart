@@ -8,7 +8,6 @@ import 'package:flutter_map/src/core/bounds.dart';
 import 'package:flutter_map/src/core/point.dart';
 import 'package:flutter_map/src/core/util.dart' as util;
 import 'package:flutter_map/src/geo/crs/crs.dart';
-import 'package:flutter_map/src/gestures/map_events.dart';
 import 'package:flutter_map/src/layer/tile_builder/tile_builder.dart';
 import 'package:flutter_map/src/layer/tile_provider/tile_provider.dart';
 import 'package:flutter_map/src/map/map.dart';
@@ -1190,7 +1189,7 @@ class _TileLayerState extends State<TileLayer> with TickerProviderStateMixin {
     var tileSize = getTileSize();
     return Bounds(
       bounds.min.unscaleBy(tileSize).floor(),
-      bounds.max.unscaleBy(tileSize).ceil() - const CustomPoint(1, 1),
+      bounds.max.unscaleBy(tileSize).ceil() -  CustomPoint(1, 1),
     );
   }
 

@@ -30,23 +30,23 @@ class _ManyMarkersPageState extends State<ManyMarkersPage> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      var r = Random();
-      for (var x = 0; x < maxMarkersCount; x++) {
-        /* allMarkers.add(
-          Marker(
-            id: "1",
-            point: LatLng(
-              doubleInRange(r, 37, 55),
-              doubleInRange(r, -9, 30),
-            ),
-            builder: (context) => const Icon(
-              Icons.circle,
-              color: Colors.red,
-              size: 12.0,
-            ),
-          ),
-        ); */
-      }
+      // var r = Random();
+      // for (var x = 0; x < maxMarkersCount; x++) {
+      //   /* allMarkers.add(
+      //     Marker(
+      //       id: "1",
+      //       point: LatLng(
+      //         doubleInRange(r, 37, 55),
+      //         doubleInRange(r, -9, 30),
+      //       ),
+      //       builder: (context) => const Icon(
+      //         Icons.circle,
+      //         color: Colors.red,
+      //         size: 12.0,
+      //       ),
+      //     ),
+      //   ); */
+      // }
       setState(() {});
     });
   }

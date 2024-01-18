@@ -1,11 +1,5 @@
-import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter_map/src/core/bounds.dart';
-import 'package:flutter_map/src/helpers/gesture.dart';
-import 'package:flutter_map/src/helpers/helpers.dart';
-import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../plugin_api.dart';
@@ -162,7 +156,6 @@ class MultiMarkerLayer extends StatefulWidget {
 class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
   MultiMarker? _draggingMultiMarker;
   var lastZoom = -1.0;
-  LatLng? _lastDragPoint;
 
   /// List containing cached pixel positions of multiMarkers
   /// Should be discarded when zoom changes
@@ -322,8 +315,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
             );
             final delta = location.difference(location2);
 
-            final done = widget.markerLayerOptions.multiMarkers
-                .remove(_draggingMultiMarker!);
+            // final done = widget.markerLayerOptions.multiMarkers.remove(_draggingMultiMarker!);
             _draggingMultiMarker =
                 _draggingMultiMarker!.copyWithNewDelta(delta);
             widget.markerLayerOptions.multiMarkers.add(_draggingMultiMarker!);

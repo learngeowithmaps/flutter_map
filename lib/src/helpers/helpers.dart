@@ -1,12 +1,7 @@
 library flutter_map.helpers;
 
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_map/plugin_api.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../flutter_map.dart';
 
 extension LatLngHelper on LatLng {
   static List<LatLng> pointsWithDelta(

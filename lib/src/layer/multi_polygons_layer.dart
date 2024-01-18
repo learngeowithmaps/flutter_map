@@ -3,16 +3,12 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_map/src/helpers/gesture.dart';
-import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
-
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/src/helpers/gesture.dart';
 import 'package:flutter_map/src/helpers/map_toolkit.dart';
 import 'package:flutter_map/src/map/map.dart';
+import 'package:latlong2/latlong.dart' hide Path;
 
 import '../helpers/helpers.dart';
 

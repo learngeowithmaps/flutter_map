@@ -5,7 +5,6 @@ linter:
     - annotate_overrides
     - avoid_function_literals_in_foreach_calls
     - avoid_null_checks_in_equality_operators
-    - avoid_returning_null
     - avoid_unused_constructor_parameters
     - await_only_futures
     - camel_case_types
@@ -18,8 +17,6 @@ linter:
     - hash_and_equals
     - implementation_imports
     - invariant_booleans
-    - iterable_contains_unrelated_type
-    - list_remove_unrelated_type
     - no_adjacent_strings_in_list
     - non_constant_identifier_names
     - omit_local_variable_types

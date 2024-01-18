@@ -30,7 +30,7 @@ class MultiPolylineLayerOptions extends LayerOptions<MultiPolyline> {
   }
 }
 
-typedef void MultiPolylineCallback(Marker);
+typedef void MultiPolylineCallback(marker);
 
 typedef MultiPolylineBuilder = Widget Function(
   BuildContext context,
@@ -97,8 +97,8 @@ class MultiPolylineLayer extends StatefulWidget {
 }
 
 class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
-  MultiPolyline? _draggingPolyline;
-  LatLng? _lastDragPoint;
+  // MultiPolyline? _draggingPolyline;
+  // LatLng? _lastDragPoint;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(

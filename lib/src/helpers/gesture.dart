@@ -102,44 +102,50 @@ class FlutterMapLayerGestureListener extends StatefulWidget {
 class _FlutterMapLayerGestureListenerState
     extends State<FlutterMapLayerGestureListener> {
   final _allListeners = <Function>[];
+  // Change the type to MasterGestureSubscriptionController
+  late MasterGestureSubscriptionController _gestureController;
+
   @override
   void initState() {
+    super.initState();
+
+    // Initialize _gestureController in initState
+    _gestureController = FlutterMapMasterGestureDetector.of(context);
     if (widget.onDragStart != null) {
-      _allListeners.add(FlutterMapMasterGestureDetector.of(context)
-          .listenForDragStart(widget.onDragStart!));
+      _allListeners.add(_gestureController.listenForDragStart(widget.onDragStart!));
     }
     if (widget.onDragUpdate != null) {
-      _allListeners.add(FlutterMapMasterGestureDetector.of(context)
+      _allListeners.add(_gestureController
           .listenForDragUpdate(widget.onDragUpdate!));
     }
     if (widget.onDragEnd != null) {
-      _allListeners.add(FlutterMapMasterGestureDetector.of(context)
+      _allListeners.add(_gestureController
           .listenForDragEnd(widget.onDragEnd!));
     }
     if (widget.onTapDown != null) {
-      _allListeners.add(FlutterMapMasterGestureDetector.of(context)
+      _allListeners.add(_gestureController
           .listenForTapDown(widget.onTapDown!));
     }
     if (widget.onTapUp != null) {
-      _allListeners.add(FlutterMapMasterGestureDetector.of(context)
+      _allListeners.add(_gestureController
           .listenForTapUp(widget.onTapUp!));
     }
     if (widget.onTap != null) {
-      _allListeners.add(FlutterMapMasterGestureDetector.of(context)
+      _allListeners.add(_gestureController
           .listenForTap(widget.onTap!));
     }
     if (widget.onTapCancel != null) {
-      _allListeners.add(FlutterMapMasterGestureDetector.of(context)
+      _allListeners.add(_gestureController
           .listenForTapCancel(widget.onTapCancel!));
     }
-    super.initState();
   }
 
   @override
   void dispose() {
     for (var listener in _allListeners) {
-      FlutterMapMasterGestureDetector.of(context).removeListener(listener);
+      _gestureController.removeListener(listener);
     }
+
     super.dispose();
   }
 
@@ -178,7 +184,7 @@ class FlutterMapMasterGestureDetector extends StatefulWidget {
     final state = context
         .findAncestorStateOfType<_FlutterMapMasterGestureDetectorState>();
     if (state == null) {
-      throw FlutterError("add LayerGestureHandler above map layers");
+      throw FlutterError('add LayerGestureHandler above map layers');
     }
     return state.getController;
   }

@@ -15,7 +15,7 @@ class StatefulMarkersPage extends StatefulWidget {
 
 class _StatefulMarkersPageState extends State<StatefulMarkersPage> {
   late List<Marker> _markers;
-  final Random _random = Random();
+  // final Random _random = Random();
 
   @override
   void initState() {

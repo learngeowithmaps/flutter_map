@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -50,11 +49,10 @@ class PolylinePage extends StatelessWidget {
                     MultiPolylineLayerOptions(
                       multiPolylines: [
                         MultiPolyline(
-                          id: "4",
+                          id: '4',
                           points: points,
                           onTap: (_) {
-                            print("polyline tapped" +
-                                DateTime.now().toIso8601String());
+                            print('polyline tapped : ${DateTime.now().toIso8601String()}');
                           },
                           builder: (context, points, offsets, boundingBox) {
                             return MultiPolylineWidget(

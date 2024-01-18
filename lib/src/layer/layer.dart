@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter_map/plugin_api.dart';
 
 /// Common type between all LayerOptions.
 ///
 /// All LayerOptions have access to a stream that notifies when the map needs
 /// rebuilding.
-typedef void LayerElementDragCallback<T>(
+typedef LayerElementDragCallback<T> = void Function(
   T element,
   PointerMoveEvent dragDetails,
 );

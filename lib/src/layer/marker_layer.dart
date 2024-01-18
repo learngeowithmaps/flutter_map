@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
-import 'package:flutter_map/src/core/bounds.dart';
-import 'package:flutter_map/src/helpers/helpers.dart';
-import 'package:flutter_map/src/map/map.dart';
 import 'package:latlong2/latlong.dart';
 
 class MarkerLayerOptions extends LayerOptions<Marker> {
@@ -41,14 +36,14 @@ class MarkerLayerOptions extends LayerOptions<Marker> {
     this.rotateOrigin,
     this.rotateAlignment = Alignment.center,
     Stream<Null>? rebuild,
-    LayerElementDragCallback? onLayerElementDrag,
+    // LayerElementDragCallback? onLayerElementDrag,
   }) : super(
           key: key,
           rebuild: rebuild,
         );
 
-  @override
-  void handleDrag(_) {}
+  // @override
+  // void handleDrag(_) {}
 }
 
 class Anchor {

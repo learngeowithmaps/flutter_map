@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/src/helpers/map_toolkit.dart';
 import 'package:flutter_map/src/map/map.dart';
-import 'package:latlong2/latlong.dart' hide Path; // conflict with Path from UI
+import 'package:latlong2/latlong.dart' hide Path;
 import '../helpers/helpers.dart';
 
 class PolygonLayerOptions extends LayerOptions<Polygon> {
@@ -59,7 +57,8 @@ class Polygon extends MapElement<PolygonBuilder, Polygon> {
             onTap: onTap,
             delta: LatLng.zero(),
             zIndex: 0);
-  @override
+
+
   Polygon copyWithNewPoint(LatLng point) {
     final oldCenter = LatLngHelper.centerOfListOfPoints(points);
     final delta = oldCenter.difference(point);
@@ -171,8 +170,7 @@ class _PolygonLayerState extends State<PolygonLayer> {
         }
 
         return Listener(
-          onPointerMove: true
-              ? (details) {
+          onPointerMove: (details) {
                   if (_draggingPolygon != null &&
                       _draggingPolygon!.onDrag != null) {
                     final location = widget.map.offsetToLatLng(
@@ -189,8 +187,7 @@ class _PolygonLayerState extends State<PolygonLayer> {
                     _draggingPolygon!.onDrag?.call(_draggingPolygon!);
                     setState(() {});
                   }
-                }
-              : null,
+                },
           onPointerUp: (_) {
             setState(() {
               //widget.polygonOpts.handlingTouch = false;

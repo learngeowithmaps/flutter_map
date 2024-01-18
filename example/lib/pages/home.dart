@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map/plugin_api.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -19,12 +18,12 @@ class _HomePageState extends State<HomePage> {
   final polygonRebuild = StreamController<Null>();
   var markers = <MultiMarker>[
     MultiMarker(
-      id: "2",
+      id: '2',
       width: 80.0,
       height: 80.0,
       onDrag: (_) {},
       onTap: (_) {
-        print("TAPPED" + DateTime.now().toIso8601String());
+        print('TAPPED${DateTime.now().toIso8601String()}');
       },
       points: [
         LatLng(53.3498, -6.2603),
@@ -43,7 +42,7 @@ class _HomePageState extends State<HomePage> {
         MultiPolygon(
           onDrag: (_) {},
           onTap: (_) {},
-          id: "6",
+          id: '6',
           points: [
             [
               LatLng(51.5, -0.09),
@@ -69,12 +68,12 @@ class _HomePageState extends State<HomePage> {
         ),
         MultiPolygon(
           onDrag: (_) {
-            print("polygon dragged" + DateTime.now().toIso8601String());
+            print('polygon dragged : ${DateTime.now().toIso8601String()}');
           },
           onTap: (_) {
-            print("polygon tapped" + DateTime.now().toIso8601String());
+            print('polygon tapped : ${DateTime.now().toIso8601String()}');
           },
-          id: "7",
+          id: '7',
           points: [
             [
               LatLng(41.5, -0.09),
@@ -147,11 +146,11 @@ class _HomePageState extends State<HomePage> {
                             ),
                             builder: (context) {
                               return Image.asset(
-                                  "assets/map/anholt_osmbright/12/2179/1260.png");
+                                  'assets/map/anholt_osmbright/12/2179/1260.png');
                             },
-                            id: "hdh",
+                            id: 'hdh',
                             imageProvider: AssetImage(
-                                "assets/map/anholt_osmbright/12/2179/1260.png"))
+                                'assets/map/anholt_osmbright/12/2179/1260.png'))
                       ],
                     ),
                   ],
