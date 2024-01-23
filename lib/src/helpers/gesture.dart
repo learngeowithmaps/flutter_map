@@ -134,14 +134,14 @@ class _FlutterMapLayerGestureListenerState
     }
     super.initState();
   }
-
-  @override
-  void dispose() {
-    for (var listener in _allListeners) {
-      FlutterMapMasterGestureDetector.of(context).removeListener(listener);
-    }
-    super.dispose();
-  }
+  //
+  // @override
+  // void dispose() {
+  //   for (var listener in _allListeners) {
+  //     FlutterMapMasterGestureDetector.of(context).removeListener(listener);
+  //   }
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
