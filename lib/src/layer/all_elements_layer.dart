@@ -36,9 +36,9 @@ class AllElementsLayerOptions extends LayerOptions<MultiPolygon> {
     this.rotateAlignment = Alignment.center,
     Stream<Null>? rebuild,
   }) : super(
-    key: key,
-    rebuild: rebuild,
-  ) {
+          key: key,
+          rebuild: rebuild,
+        ) {
     if (polygonCulling) {
       for (var polygon in multiPolygons) {
         polygon.boundingBox = LatLngBounds.fromPoints(
@@ -123,12 +123,12 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
     };
     if (multiMarker != null) {
       final pxPoints = _pxCache.update(multiMarker,
-              (value) => multiMarker.points.map(widget.map.project).toList(),
+          (value) => multiMarker.points.map(widget.map.project).toList(),
           ifAbsent: () => multiMarker.points.map(widget.map.project).toList());
 
       _boundsCache.update(
         multiMarker,
-            (_) {
+        (_) {
           return genBounds(multiMarker, pxPoints);
         },
         ifAbsent: () {
@@ -198,53 +198,59 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
         }
 
         var multiMarkers = <Widget>[];
+
         final sameZoom = widget.map.zoom == lastZoom;
         for (var marker in widget.options.multiMarkers) {
-          for (var j = 0; j < marker.points.length; j++) {
-            // Decide whether to use cached point or calculate it
-            final useCache =
-            marker.equals(_draggingMapElement) ? false : sameZoom;
-            if (!_pxCache.containsKey(marker) || !useCache) {
-              generatePxCache(marker);
-            }
-            var pxPoint = _pxCache[marker]![j];
+          final isVisible = (marker.maxZoomVisibility) <= widget.map.zoom;
+          print("visible : $isVisible :: ${marker.maxZoomVisibility}");
+          if(isVisible){
+            for (var j = 0; j < marker.points.length; j++) {
+              // Decide whether to use cached point or calculate it
+              final useCache =
+              marker.equals(_draggingMapElement) ? false : sameZoom;
+              if (!_pxCache.containsKey(marker) || !useCache) {
+                generatePxCache(marker);
+              }
+              var pxPoint = _pxCache[marker]![j];
 
-            final width = marker.width - marker.anchor.left;
-            final height = marker.height - marker.anchor.top;
-            var sw = CustomPoint(pxPoint.x + width, pxPoint.y - height);
-            var ne = CustomPoint(pxPoint.x - width, pxPoint.y + height);
+              final width = marker.width - marker.anchor.left;
+              final height = marker.height - marker.anchor.top;
+              var sw = CustomPoint(pxPoint.x + width, pxPoint.y - height);
+              var ne = CustomPoint(pxPoint.x - width, pxPoint.y + height);
 
-            if (!widget.map.pixelBounds.containsPartialBounds(Bounds(sw, ne))) {
-              continue;
-            }
+              if (!widget.map.pixelBounds.containsPartialBounds(Bounds(sw, ne))) {
+                continue;
+              }
 
-            final pos = pxPoint - widget.map.getPixelOrigin();
-            final markerWidget = (marker.rotate ??
-                widget.options.rotate ??
-                false)
-            // Counter rotated marker to the map rotation
-                ? Transform.rotate(
-              angle: -widget.map.rotationRad,
-              origin: marker.rotateOrigin ?? widget.options.rotateOrigin,
-              alignment: marker.rotateAlignment ??
-                  widget.options.rotateAlignment,
-              child: marker.builder(context),
-            )
-                : marker.builder(context);
+              final pos = pxPoint - widget.map.getPixelOrigin();
+              final markerWidget = (marker.rotate ??
+                  widget.options.rotate ??
+                  false)
+              // Counter rotated marker to the map rotation
+                  ? Transform.rotate(
+                angle: -widget.map.rotationRad,
+                origin: marker.rotateOrigin ?? widget.options.rotateOrigin,
+                alignment: marker.rotateAlignment ??
+                    widget.options.rotateAlignment,
+                child: marker.builder(context),
+              )
+                  : marker.builder(context);
 
-            multiMarkers.add(
-              Positioned(
-                key: ValueKey(marker.id + marker.points[j].toSexagesimal()),
-                width: marker.width,
-                height: marker.height,
-                left: pos.x - width,
-                top: pos.y - height,
-                child: Container(
-                  child: markerWidget,
+              multiMarkers.add(
+                Positioned(
+                  key: ValueKey(marker.id + marker.points[j].toSexagesimal()),
+                  width: marker.width,
+                  height: marker.height,
+                  left: pos.x - width,
+                  top: pos.y - height,
+                  child: Container(
+                    child: markerWidget,
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           }
+
         }
         lastZoom = widget.map.zoom;
 
@@ -349,7 +355,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               final delta = location.difference(location2);
 
               final done =
-              widget.options.multiMarkers.remove(_draggingMapElement!);
+                  widget.options.multiMarkers.remove(_draggingMapElement!);
               _draggingMapElement =
                   _draggingMapElement!.copyWithNewDelta(delta);
               widget.options.multiMarkers
@@ -438,12 +444,12 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
           widget.map.zoom, widget.map.zoom); // TODO replace with 1?
       final pixelOrigin = widget.map.getPixelOrigin();
       final upperLeftPixel = widget.map
-          .project(overlayImage.bounds.northWest)
-          .multiplyBy(zoomScale) -
+              .project(overlayImage.bounds.northWest)
+              .multiplyBy(zoomScale) -
           pixelOrigin;
       final bottomRightPixel = widget.map
-          .project(overlayImage.bounds.southEast)
-          .multiplyBy(zoomScale) -
+              .project(overlayImage.bounds.southEast)
+              .multiplyBy(zoomScale) -
           pixelOrigin;
       returnable.add(
         Positioned(
@@ -478,7 +484,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid &&
           p.points.any(
-                (points) => PolygonUtil.containsLocation(
+            (points) => PolygonUtil.containsLocation(
               location,
               points,
               true,
@@ -493,7 +499,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid &&
           p.points.any(
-                (points) => PolygonUtil.isLocationOnPath(location, points, true,
+            (points) => PolygonUtil.isLocationOnPath(location, points, true,
                 tolerance: p.tolerance * (1 / widget.map.zoom)),
           )) {
         if ((p.onDrag != null || p.onTap != null)) {
@@ -532,9 +538,9 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
   }
 
   void _fillOffsets(
-      final List<List<Offset>> alloffsets,
-      final List<List<LatLng>> allpoints,
-      ) {
+    final List<List<Offset>> alloffsets,
+    final List<List<LatLng>> allpoints,
+  ) {
     for (var j = 0; j < allpoints.length; j++) {
       final offsets = <Offset>[];
       final points = allpoints[j];
@@ -543,7 +549,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
 
         var pos = widget.map.project(point);
         pos = pos.multiplyBy(
-            widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
+                widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
             widget.map.getPixelOrigin();
         offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
         if (i > 0) {
