@@ -87,7 +87,7 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
     this.rotate,
     this.rotateOrigin,
     this.rotateAlignment,
-    this.maxZoomVisibility = double.infinity,
+    this.maxZoomVisibility = 0.0,
     AnchorPos? anchorPos,
     Null Function(MultiMarker)? onTap,
     Null Function(MultiMarker)? onDrag,
