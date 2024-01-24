@@ -200,7 +200,6 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
           final isVisible = (marker.maxZoomVisibility.isFinite)
               ? (marker.maxZoomVisibility) <= widget.map.zoom
               : false;
-          print('[${marker.id}] :: visiblity = $isVisible :: Zoom = ${marker.maxZoomVisibility}');
           if(isVisible){
             for (var j = 0; j < marker.points.length; j++) {
               // Decide whether to use cached point or calculate it
