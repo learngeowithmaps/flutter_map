@@ -194,57 +194,61 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
         }
 
         var multiMarkers = <Widget>[];
+
         final sameZoom = widget.map.zoom == lastZoom;
         for (var marker in widget.options.multiMarkers) {
-              final isVisible = (marker.maxZoomVisibility) <= widget.map.zoom;
-      if(isVisible){
-        for (var j = 0; j < marker.points.length; j++) {
-          // Decide whether to use cached point or calculate it
-          final useCache =
-          marker.equals(_draggingMapElement) ? false : sameZoom;
-          if (!_pxCache.containsKey(marker) || !useCache) {
-            generatePxCache(marker);
+          final isVisible = (marker.maxZoomVisibility.isFinite)
+              ? (marker.maxZoomVisibility) <= widget.map.zoom
+              : false;
+          print('[${marker.id}] :: visiblity = $isVisible :: Zoom = ${marker.maxZoomVisibility}');
+          if(isVisible){
+            for (var j = 0; j < marker.points.length; j++) {
+              // Decide whether to use cached point or calculate it
+              final useCache =
+              marker.equals(_draggingMapElement) ? false : sameZoom;
+              if (!_pxCache.containsKey(marker) || !useCache) {
+                generatePxCache(marker);
+              }
+              var pxPoint = _pxCache[marker]![j];
+
+              final width = marker.width - marker.anchor.left;
+              final height = marker.height - marker.anchor.top;
+              var sw = CustomPoint(pxPoint.x + width, pxPoint.y - height);
+              var ne = CustomPoint(pxPoint.x - width, pxPoint.y + height);
+
+              if (!widget.map.pixelBounds.containsPartialBounds(Bounds(sw, ne))) {
+                continue;
+              }
+
+              final pos = pxPoint - widget.map.getPixelOrigin();
+              final markerWidget = (marker.rotate ??
+                  widget.options.rotate ??
+                  false)
+              // Counter rotated marker to the map rotation
+                  ? Transform.rotate(
+                angle: -widget.map.rotationRad,
+                origin: marker.rotateOrigin ?? widget.options.rotateOrigin,
+                alignment: marker.rotateAlignment ??
+                    widget.options.rotateAlignment,
+                child: marker.builder(context),
+              )
+                  : marker.builder(context);
+
+              multiMarkers.add(
+                Positioned(
+                  key: ValueKey(marker.id + marker.points[j].toSexagesimal()),
+                  width: marker.width,
+                  height: marker.height,
+                  left: pos.x - width,
+                  top: pos.y - height,
+                  child: Container(
+                    child: markerWidget,
+                  ),
+                ),
+              );
+            }
           }
-          var pxPoint = _pxCache[marker]![j];
 
-          final width = marker.width - marker.anchor.left;
-          final height = marker.height - marker.anchor.top;
-          var sw = CustomPoint(pxPoint.x + width, pxPoint.y - height);
-          var ne = CustomPoint(pxPoint.x - width, pxPoint.y + height);
-
-          if (!widget.map.pixelBounds.containsPartialBounds(Bounds(sw, ne))) {
-            continue;
-          }
-
-          final pos = pxPoint - widget.map.getPixelOrigin();
-          final markerWidget = (marker.rotate ??
-              widget.options.rotate ??
-              false)
-          // Counter rotated marker to the map rotation
-              ? Transform.rotate(
-            angle: -widget.map.rotationRad,
-            origin: marker.rotateOrigin ?? widget.options.rotateOrigin,
-            alignment: marker.rotateAlignment ??
-                widget.options.rotateAlignment,
-            child: marker.builder(context),
-          )
-              : marker.builder(context);
-
-          multiMarkers.add(
-            Positioned(
-              key: ValueKey(marker.id + marker.points[j].toSexagesimal()),
-              width: marker.width,
-              height: marker.height,
-              left: pos.x - width,
-              top: pos.y - height,
-              child: Container(
-                child: markerWidget,
-              ),
-            ),
-          );
-        }
-      }
-         
         }
         lastZoom = widget.map.zoom;
 
@@ -348,7 +352,8 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               );
               final delta = location.difference(location2);
 
-              // final done = widget.options.multiMarkers.remove(_draggingMapElement!);
+              final done =
+                  widget.options.multiMarkers.remove(_draggingMapElement!);
               _draggingMapElement =
                   _draggingMapElement!.copyWithNewDelta(delta);
               widget.options.multiMarkers
@@ -370,8 +375,10 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               );
               final delta = location.difference(location2);
 
-              // final done = widget.options.multiOverlayImages.remove(_draggingMapElement!);
-              _draggingMapElement = _draggingMapElement!.copyWithNewDelta(delta);
+              final done = widget.options.multiOverlayImages
+                  .remove(_draggingMapElement!);
+              _draggingMapElement =
+                  _draggingMapElement!.copyWithNewDelta(delta);
               widget.options.multiOverlayImages
                   .add(_draggingMapElement! as MultiOverlayImage);
               //generatePxCache();
