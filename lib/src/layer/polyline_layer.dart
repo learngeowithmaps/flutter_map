@@ -54,7 +54,7 @@ class Polyline extends MapElement<PolylineBuilder, Polyline> {
             id: id,
             onDrag: null,
             onTap: onTap,
-            delta: LatLng.zero(),
+            delta: LatLng(0,0),
             zIndex: 0);
 
   @override

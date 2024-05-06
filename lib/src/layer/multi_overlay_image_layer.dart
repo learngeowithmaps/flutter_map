@@ -36,7 +36,7 @@ class MultiOverlayImage
       Null Function(MultiOverlayImage)? onTap,
       Null Function(MultiOverlayImage)? onDrag,
       int zIndex = 0,
-      LatLng delta = const LatLng.zero()})
+      LatLng delta = const LatLng(0,0)})
       : super(
             builder: builder,
             delta: delta,

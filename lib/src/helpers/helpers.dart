@@ -8,7 +8,7 @@ extension LatLngHelper on LatLng {
     List<LatLng> points,
     LatLng delta,
   ) {
-    if (delta == LatLng.zero()) {
+    if (delta == LatLng(0,0)) {
       return points;
     }
     try {
@@ -28,7 +28,7 @@ extension LatLngHelper on LatLng {
     List<List<LatLng>> points,
     LatLng delta,
   ) {
-    if (delta == LatLng.zero()) {
+    if (delta == LatLng(0,0)) {
       return points;
     }
     try {

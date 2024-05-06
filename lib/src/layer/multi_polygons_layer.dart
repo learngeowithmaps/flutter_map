@@ -55,7 +55,7 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
           id: id,
           onDrag: onDrag,
           onTap: onTap,
-          delta: LatLng.zero(),
+          delta: LatLng(0,0),
           zIndex: zIndex,
         );
   @override

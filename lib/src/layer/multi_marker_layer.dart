@@ -98,7 +98,7 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
           builder: builder,
           onDrag: onDrag,
           onTap: onTap,
-          delta: LatLng.zero(),
+          delta: LatLng(0,0),
           zIndex: zIndex,
         );
 

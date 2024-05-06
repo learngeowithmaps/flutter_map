@@ -57,7 +57,7 @@ class MultiPolyline extends MapElement<MultiPolylineBuilder, MultiPolyline> {
           id: id,
           onDrag: null,
           onTap: onTap,
-          delta: LatLng.zero(),
+          delta: LatLng(0,0),
           zIndex: zIndex,
         );
 

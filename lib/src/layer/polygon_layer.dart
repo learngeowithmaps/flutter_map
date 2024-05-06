@@ -55,7 +55,7 @@ class Polygon extends MapElement<PolygonBuilder, Polygon> {
             id: id,
             onDrag: onDrag,
             onTap: onTap,
-            delta: LatLng.zero(),
+            delta: LatLng(0,0),
             zIndex: 0);
 
 

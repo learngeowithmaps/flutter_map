@@ -157,7 +157,7 @@ class Marker extends MapElement<WidgetBuilder, Marker> {
             builder: builder,
             onDrag: onDrag,
             onTap: onTap,
-            delta: LatLng.zero(),
+            delta: LatLng(0,0),
             zIndex: 0);
   @override
   Marker copyWithNewDelta(LatLng point) {
