@@ -51,8 +51,7 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
   final double width;
   final double height;
   final Anchor anchor;
-  final double maxZoomVisibility;  // to controler visiblilty
-
+  final double maxZoomVisibility;  // to control visibility
 
   /// If true marker will be counter rotated to the map rotation
   final bool? rotate;
@@ -78,6 +77,8 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
   /// [Directionality.of] returns [TextDirection.rtl].
   final AlignmentGeometry? rotateAlignment;
 
+  final bool showAnimation;
+
   MultiMarker({
     required this.points,
     required WidgetBuilder builder,
@@ -88,19 +89,20 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
     this.rotateOrigin,
     this.rotateAlignment,
     this.maxZoomVisibility = 0.0,
+    this.showAnimation = false,
     AnchorPos? anchorPos,
     Null Function(MultiMarker)? onTap,
     Null Function(MultiMarker)? onDrag,
     int zIndex = 0,
   })  : anchor = Anchor.forPos(anchorPos, width, height),
         super(
-          id: id,
-          builder: builder,
-          onDrag: onDrag,
-          onTap: onTap,
-          delta: LatLng(0,0),
-          zIndex: zIndex,
-        );
+        id: id,
+        builder: builder,
+        onDrag: onDrag,
+        onTap: onTap,
+        delta: LatLng(0, 0),
+        zIndex: zIndex,
+      );
 
   CustomPoint sw(CustomPoint pxPoint) => CustomPoint(
       pxPoint.x + (width - anchor.left), pxPoint.y - (height - anchor.top));
@@ -120,6 +122,7 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
       id: id,
       onDrag: onDrag,
       onTap: onTap,
+      showAnimation: showAnimation,
       zIndex: zIndex,
     );
   }

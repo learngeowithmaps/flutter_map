@@ -26,6 +26,8 @@ dependencies:
   transparent_image: ^2.0.0
   tuple: ^2.0.0
   vector_math: ^2.1.0
+  flutter_spinkit: ^5.2.1
+
 
 dev_dependencies:
   flutter_test:
