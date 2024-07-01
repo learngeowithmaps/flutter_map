@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_map/plugin_api.dart';
@@ -15,9 +16,9 @@ class MultiPolylineLayerOptions extends LayerOptions<MultiPolyline> {
     this.polylineCulling = false,
     Stream<Null>? rebuild,
   }) : super(
-          key: key,
-          rebuild: rebuild,
-        ) {
+    key: key,
+    rebuild: rebuild,
+  ) {
     if (polylineCulling) {
       for (var polyline in multiPolylines) {
         polyline.boundingBox = LatLngBounds.fromPoints(
@@ -33,11 +34,11 @@ class MultiPolylineLayerOptions extends LayerOptions<MultiPolyline> {
 typedef void MultiPolylineCallback(marker);
 
 typedef MultiPolylineBuilder = Widget Function(
-  BuildContext context,
-  List<List<LatLng>> points,
-  List<List<Offset>> offsets,
-  LatLngBounds? boundingBox,
-);
+    BuildContext context,
+    List<List<LatLng>> points,
+    List<List<Offset>> offsets,
+    LatLngBounds? boundingBox,
+    );
 
 class MultiPolyline extends MapElement<MultiPolylineBuilder, MultiPolyline> {
   final List<List<LatLng>> points;
@@ -53,13 +54,13 @@ class MultiPolyline extends MapElement<MultiPolylineBuilder, MultiPolyline> {
     required this.points,
     int zIndex = 0,
   }) : super(
-          builder: builder,
-          id: id,
-          onDrag: null,
-          onTap: onTap,
-          delta: LatLng(0,0),
-          zIndex: zIndex,
-        );
+    builder: builder,
+    id: id,
+    onDrag: null,
+    onTap: onTap,
+    delta: LatLng(0,0),
+    zIndex: zIndex,
+  );
 
   @override
   MultiPolyline copyWithNewDelta(LatLng location) {
@@ -172,7 +173,7 @@ class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid &&
           p.points.any(
-            (points) => PolygonUtil.isLocationOnPath(location, points, true,
+                (points) => PolygonUtil.isLocationOnPath(location, points, true,
                 tolerance: p.tolerance * (1 / widget.map.zoom)),
           )) {
         if ((p.onDrag != null || p.onTap != null)) {
@@ -185,9 +186,9 @@ class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
   }
 
   void _fillOffsets(
-    final List<List<Offset>> alloffsets,
-    final List<List<LatLng>> allpoints,
-  ) {
+      final List<List<Offset>> alloffsets,
+      final List<List<LatLng>> allpoints,
+      ) {
     for (var j = 0; j < allpoints.length; j++) {
       final offsets = <Offset>[];
       final points = allpoints[j];
@@ -196,7 +197,7 @@ class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
 
         var pos = widget.map.project(point);
         pos = pos.multiplyBy(
-                widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
+            widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
             widget.map.getPixelOrigin();
         offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
         if (i > 0) {
@@ -208,7 +209,8 @@ class _MultiPolylineLayerState extends State<MultiPolylineLayer> {
   }
 }
 
-class MultiPolylineWidget extends StatelessWidget {
+// MultiPolylineWidget class definition
+class MultiPolylineWidget extends StatefulWidget {
   final List<List<LatLng>> points;
   final List<List<Offset>> offsets;
   final double strokeWidth;
@@ -219,9 +221,13 @@ class MultiPolylineWidget extends StatelessWidget {
   final List<double>? colorsStop;
   final bool isDotted;
   final LatLngBounds? boundingBox;
+  final bool showAnimation;
+
   const MultiPolylineWidget({
     Key? key,
     required this.points,
+    required this.offsets,
+    required this.boundingBox,
     this.strokeWidth = 1.0,
     this.color = const Color(0xFF00FF00),
     this.borderStrokeWidth = 0.0,
@@ -229,31 +235,60 @@ class MultiPolylineWidget extends StatelessWidget {
     this.gradientColors,
     this.colorsStop,
     this.isDotted = false,
-    required this.offsets,
-    required this.boundingBox,
+    this.showAnimation = false,
   }) : super(key: key);
 
   @override
+  State<MultiPolylineWidget> createState() => _MultiPolylineWidgetState();
+}
+
+class _MultiPolylineWidgetState extends State<MultiPolylineWidget> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _rippleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 1),
+    )..repeat(reverse: true);
+    _rippleAnimation = Tween<double>(begin: 0, end: 1).animate(_animationController);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: MultiPolylinePainter(
-        boundingBox: boundingBox,
-        allOffsets: offsets,
-        allPoints: points,
-        borderColor: borderColor,
-        borderStrokeWidth: borderStrokeWidth,
-        color: color,
-        colorsStop: colorsStop,
-        gradientColors: gradientColors,
-        isDotted: isDotted,
-        strokeWidth: strokeWidth,
-      ),
+    return AnimatedBuilder(
+      animation: _rippleAnimation,
+      builder: (context, child) {
+        return CustomPaint(
+          painter: MultiPolylinePainter(
+            boundingBox: widget.boundingBox,
+            allOffsets: widget.offsets,
+            allPoints: widget.points,
+            borderColor: widget.borderColor,
+            borderStrokeWidth: widget.borderStrokeWidth,
+            color: widget.color,
+            colorsStop: widget.colorsStop,
+            gradientColors: widget.gradientColors,
+            isDotted: widget.isDotted,
+            strokeWidth: widget.strokeWidth,
+            showAnimation: widget.showAnimation,
+            animationValue: _rippleAnimation.value,
+          ),
+        );
+      },
     );
   }
 }
 
 class MultiPolylinePainter extends CustomPainter {
-  //final MultiPolyline polylineOpt;
   final List<List<LatLng>> allPoints;
   final List<List<Offset>> allOffsets;
   final double strokeWidth;
@@ -264,6 +299,8 @@ class MultiPolylinePainter extends CustomPainter {
   final List<double>? colorsStop;
   final bool isDotted;
   final LatLngBounds? boundingBox;
+  final bool showAnimation;
+  final double animationValue;
 
   MultiPolylinePainter({
     required this.allOffsets,
@@ -276,7 +313,10 @@ class MultiPolylinePainter extends CustomPainter {
     this.gradientColors,
     this.colorsStop,
     this.isDotted = false,
+    required this.showAnimation,
+    required this.animationValue,
   });
+
   @override
   void paint(Canvas canvas, Size size) {
     for (var offsets in allOffsets) {
@@ -309,11 +349,11 @@ class MultiPolylinePainter extends CustomPainter {
 
         final borderPaint = strokeWidth > 0.0
             ? (Paint()
-              ..color = borderColor ?? Color(0x00000000)
-              ..strokeWidth = strokeWidth + strokeWidth
-              ..strokeCap = StrokeCap.round
-              ..strokeJoin = StrokeJoin.round
-              ..blendMode = BlendMode.srcOver)
+          ..color = borderColor ?? Color(0x00000000)
+          ..strokeWidth = strokeWidth + strokeWidth
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..blendMode = BlendMode.srcOver)
             : null;
         var radius = paint.strokeWidth / 2;
         var borderRadius = (borderPaint?.strokeWidth ?? 0) / 2;
@@ -321,13 +361,13 @@ class MultiPolylinePainter extends CustomPainter {
           var spacing = strokeWidth * 1.5;
           canvas.saveLayer(rect, Paint());
           if (borderPaint != null && filterPaint != null) {
-            _paintDottedLine(
-                canvas, offsets, borderRadius, spacing, borderPaint);
+            _paintDottedLine(canvas, offsets, borderRadius, spacing, borderPaint);
             _paintDottedLine(canvas, offsets, radius, spacing, filterPaint);
           }
           _paintDottedLine(canvas, offsets, radius, spacing, paint);
           canvas.restore();
-        } else {
+        }
+        else {
           paint.style = PaintingStyle.stroke;
           canvas.saveLayer(rect, Paint());
           if (borderPaint != null && filterPaint != null) {
@@ -339,8 +379,41 @@ class MultiPolylinePainter extends CustomPainter {
           _paintLine(canvas, offsets, paint);
           canvas.restore();
         }
+        if (showAnimation) {
+          _paintBlinkLine(canvas, offsets, animationValue,);
+        }
       }
     }
+  }
+
+
+
+
+  void _paintBlinkLine(Canvas canvas, List<Offset> offsets, double animationValue) {
+    if (offsets.length < 2) return;
+
+    // Define paint for the blinking effect
+    final paint = Paint()
+      ..strokeWidth = 6.0 // Adjust the stroke width as needed
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    // Calculate the opacity based on the animation value
+    double opacity = 0.2 + animationValue * 0.8;
+    opacity = opacity.clamp(0.0, 1.0);
+    paint.color = Colors.amber.withOpacity(opacity);
+
+    // Create the path for the polyline
+    final path = ui.Path();
+    path.moveTo(offsets[0].dx, offsets[0].dy); // Move to the first point
+
+    for (int i = 1; i < offsets.length; i++) {
+      path.lineTo(offsets[i].dx, offsets[i].dy); // Draw lines to each subsequent point
+    }
+
+    // Draw the path on the canvas
+    canvas.drawPath(path, paint);
   }
 
   void _paintDottedLine(Canvas canvas, List<Offset> offsets, double radius,
@@ -367,6 +440,7 @@ class MultiPolylinePainter extends CustomPainter {
     canvas.drawPath(path, paint);
   }
 
+
   void _paintLine(Canvas canvas, List<Offset> offsets, Paint paint) {
     if (offsets.isNotEmpty) {
       final path = ui.Path()..moveTo(offsets[0].dx, offsets[0].dy);
@@ -389,12 +463,16 @@ class MultiPolylinePainter extends CustomPainter {
     final colorsStopInterval = 1.0 / gradientColors!.length;
     return gradientColors!
         .map<double>((gradientColor) =>
-            gradientColors!.indexOf(gradientColor) * colorsStopInterval)
+    gradientColors!.indexOf(gradientColor) * colorsStopInterval)
         .toList();
   }
 
+
   @override
-  bool shouldRepaint(MultiPolylinePainter other) => false;
+  bool shouldRepaint(covariant MultiPolylinePainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.showAnimation != showAnimation;
+  }
 }
 
 double _dist(Offset v, Offset w) {

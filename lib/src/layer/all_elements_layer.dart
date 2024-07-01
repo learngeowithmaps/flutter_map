@@ -33,9 +33,9 @@ class AllElementsLayerOptions extends LayerOptions<MultiPolygon> {
     this.rotateAlignment = Alignment.center,
     Stream<Null>? rebuild,
   }) : super(
-          key: key,
-          rebuild: rebuild,
-        ) {
+    key: key,
+    rebuild: rebuild,
+  ) {
     if (polygonCulling) {
       for (var polygon in multiPolygons) {
         polygon.boundingBox = LatLngBounds.fromPoints(
@@ -120,12 +120,12 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
     };
     if (multiMarker != null) {
       final pxPoints = _pxCache.update(multiMarker,
-          (value) => multiMarker.points.map(widget.map.project).toList(),
+              (value) => multiMarker.points.map(widget.map.project).toList(),
           ifAbsent: () => multiMarker.points.map(widget.map.project).toList());
 
       _boundsCache.update(
         multiMarker,
-        (_) {
+            (_) {
           return genBounds(multiMarker, pxPoints);
         },
         ifAbsent: () {
@@ -176,7 +176,6 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
 
           if (widget.options.polygonCulling &&
               !polygon.boundingBox.isOverlapping(widget.map.bounds)) {
-            // skip this polygon as it's offscreen
             continue;
           }
 
@@ -193,9 +192,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
             ),
           );
         }
-
         var multiMarkers = <Widget>[];
-
         final sameZoom = widget.map.zoom == lastZoom;
         for (var marker in widget.options.multiMarkers) {
           final isVisible = (marker.maxZoomVisibility.isFinite)
@@ -224,7 +221,6 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               final markerWidget = (marker.rotate ??
                   widget.options.rotate ??
                   false)
-              // Counter rotated marker to the map rotation
                   ? Transform.rotate(
                 angle: -widget.map.rotationRad,
                 origin: marker.rotateOrigin ?? widget.options.rotateOrigin,
@@ -235,9 +231,9 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
                     marker.builder(context),
                     if (marker.showAnimation)
                       Positioned.fill(
-                        child: SpinKitDoubleBounce(
-                          color: Colors.blue,
-                          size: marker.width, // adjust size as needed
+                        child: SpinKitPulse(
+                          color: Colors.amber,
+                          size: marker.width,
                         ),
                       ),
                   ],
@@ -248,9 +244,9 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
                   marker.builder(context),
                   if (marker.showAnimation)
                     Positioned.fill(
-                      child: SpinKitDoubleBounce(
-                        color: Colors.blue,
-                        size: marker.width, // adjust size as needed
+                      child: SpinKitPulse(
+                        color: Colors.yellow,
+                        size: marker.width,
                       ),
                     ),
                 ],
@@ -717,12 +713,12 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
           widget.map.zoom, widget.map.zoom); // TODO replace with 1?
       final pixelOrigin = widget.map.getPixelOrigin();
       final upperLeftPixel = widget.map
-              .project(overlayImage.bounds.northWest)
-              .multiplyBy(zoomScale) -
+          .project(overlayImage.bounds.northWest)
+          .multiplyBy(zoomScale) -
           pixelOrigin;
       final bottomRightPixel = widget.map
-              .project(overlayImage.bounds.southEast)
-              .multiplyBy(zoomScale) -
+          .project(overlayImage.bounds.southEast)
+          .multiplyBy(zoomScale) -
           pixelOrigin;
       returnable.add(
         Positioned(
@@ -757,7 +753,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid &&
           p.points.any(
-            (points) => PolygonUtil.containsLocation(
+                (points) => PolygonUtil.containsLocation(
               location,
               points,
               true,
@@ -772,7 +768,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid &&
           p.points.any(
-            (points) => PolygonUtil.isLocationOnPath(location, points, true,
+                (points) => PolygonUtil.isLocationOnPath(location, points, true,
                 tolerance: p.tolerance * (1 / widget.map.zoom)),
           )) {
         if ((p.onDrag != null || p.onTap != null)) {
@@ -811,9 +807,9 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
   }
 
   void _fillOffsets(
-    final List<List<Offset>> alloffsets,
-    final List<List<LatLng>> allpoints,
-  ) {
+      final List<List<Offset>> alloffsets,
+      final List<List<LatLng>> allpoints,
+      ) {
     for (var j = 0; j < allpoints.length; j++) {
       final offsets = <Offset>[];
       final points = allpoints[j];
@@ -822,7 +818,7 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
 
         var pos = widget.map.project(point);
         pos = pos.multiplyBy(
-                widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
+            widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
             widget.map.getPixelOrigin();
         offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
         if (i > 0) {
@@ -834,118 +830,3 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
   }
 }
 
-/* class MultiPolygonGestureDetector
-    extends MapElementGestureDetector<MultiPolygon> {
-  MultiPolygonGestureDetector(
-      {required List<MultiPolygon> polygons,
-      required MapState mapState,
-      required Widget child,
-      required void Function(MultiPolygon p1, ScaleStartDetails p2)
-          onDragStartOnPolygon,
-      required void Function(MultiPolygon p1) onTapOnPolygon,
-      required void Function(MultiPolygon p1, ScaleUpdateDetails p2)
-          onDragUpdateOnPolygon,
-      required void Function() onDragEndOnPolygon})
-      : super(
-          polygons: polygons,
-          mapState: mapState,
-          child: child,
-          onDragStartOnPolygon: onDragStartOnPolygon,
-          onTapOnPolygon: onTapOnPolygon,
-          onDragUpdateOnPolygon: onDragUpdateOnPolygon,
-          onDragEndOnPolygon: onDragEndOnPolygon,
-        );
-
-  @override
-  MultiPolygon? tapped(Offset offset, BuildContext context, bool forTap) {
-    final location = mapState.offsetToLatLng(
-      offset,
-      context.size!.width,
-      context.size!.height,
-    );
-    for (var p in polygons) {
-      if (p.points.any(
-        (points) => PolygonUtil.containsLocation(
-          location,
-          points,
-          true,
-        ),
-      )) {
-        if ((p.onDrag != null || p.onTap != null)) {
-          return p;
-        }
-      }
-    }
-    return null;
-  }
-}
-
-abstract class MapElementGestureDetector<MapElemementType extends MapElement>
-    extends StatefulWidget {
-  final List<MapElemementType> polygons;
-  final MapState mapState;
-  final Widget child;
-  final void Function(MapElemementType, ScaleStartDetails) onDragStartOnPolygon;
-  final void Function(MapElemementType, ScaleUpdateDetails)
-      onDragUpdateOnPolygon;
-  final void Function() onDragEndOnPolygon;
-  final void Function(MapElemementType) onTapOnPolygon;
-  const MapElementGestureDetector({
-    Key? key,
-    required this.polygons,
-    required this.mapState,
-    required this.child,
-    required this.onDragStartOnPolygon,
-    required this.onTapOnPolygon,
-    required this.onDragUpdateOnPolygon,
-    required this.onDragEndOnPolygon,
-  }) : super(key: key);
-
-  MapElemementType? tapped(Offset offset, BuildContext context, bool forTap);
-
-  @override
-  State<MapElementGestureDetector<MapElemementType>> createState() =>
-      _MapElementGestureDetectorState<MapElemementType>();
-}
-
-class _MapElementGestureDetectorState<MapElemementType extends MapElement>
-    extends State<MapElementGestureDetector<MapElemementType>> {
-  MapElemementType? tapped;
-  @override
-  Widget build(BuildContext context) {
-    return LayerGestureListener(
-      child: widget.child,
-      onDragStart: (details) {
-        tapped = widget.tapped(details.localFocalPoint, context, false);
-        if (tapped != null) {
-          widget.onDragStartOnPolygon.call(tapped!, details);
-          return true;
-        } else {
-          return false;
-        }
-      },
-      onDragUpdate: (details) {
-        if (tapped != null) {
-          widget.onDragUpdateOnPolygon.call(tapped!, details);
-          return true;
-        } else {
-          return false;
-        }
-      },
-      onDragEnd: (details) {
-        tapped = null;
-        widget.onDragEndOnPolygon.call();
-        return true;
-      },
-      onTap: (details) {
-        final p = widget.tapped(details.localPosition, context, true);
-        if (p != null) {
-          widget.onTapOnPolygon.call(p);
-          return true;
-        }
-        return false;
-      },
-    );
-  }
-}
- */

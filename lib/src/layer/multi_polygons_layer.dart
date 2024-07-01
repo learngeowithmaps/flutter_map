@@ -23,9 +23,9 @@ class MultiPolygonLayerOptions extends LayerOptions<MultiPolygon> {
     this.polygonCulling = false,
     Stream<Null>? rebuild,
   }) : super(
-          key: key,
-          rebuild: rebuild,
-        ) {
+    key: key,
+    rebuild: rebuild,
+  ) {
     if (polygonCulling) {
       for (var polygon in polygons) {
         polygon.boundingBox = LatLngBounds.fromPoints(
@@ -51,13 +51,13 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
     Null Function(MultiPolygon)? onDrag,
     int zIndex = 0,
   }) : super(
-          builder: builder,
-          id: id,
-          onDrag: onDrag,
-          onTap: onTap,
-          delta: LatLng(0,0),
-          zIndex: zIndex,
-        );
+    builder: builder,
+    id: id,
+    onDrag: onDrag,
+    onTap: onTap,
+    delta: LatLng(0,0),
+    zIndex: zIndex,
+  );
   @override
   MultiPolygon copyWithNewDelta(LatLng delta) {
     final newPoints = () {
@@ -66,7 +66,7 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
           return ee
               .map(
                 (e) => e.add(delta, remainder: false),
-              )
+          )
               .toList();
         }).toList();
       } catch (e) {
@@ -235,7 +235,7 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
       final valid = forTap ? p.onTap != null : p.onDrag != null;
       if (valid &&
           p.points.any(
-            (points) => PolygonUtil.containsLocation(
+                (points) => PolygonUtil.containsLocation(
               location,
               points,
               true,
@@ -250,9 +250,9 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
   }
 
   void _fillOffsets(
-    final List<List<Offset>> alloffsets,
-    final List<List<LatLng>> allpoints,
-  ) {
+      final List<List<Offset>> alloffsets,
+      final List<List<LatLng>> allpoints,
+      ) {
     for (var j = 0; j < allpoints.length; j++) {
       final offsets = <Offset>[];
       final points = allpoints[j];
@@ -261,7 +261,7 @@ class _MultiPolygonLayerState extends State<MultiPolygonLayer> {
 
         var pos = widget.map.project(point);
         pos = pos.multiplyBy(
-                widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
+            widget.map.getZoomScale(widget.map.zoom, widget.map.zoom)) -
             widget.map.getPixelOrigin();
         offsets.add(Offset(pos.x.toDouble(), pos.y.toDouble()));
         if (i > 0) {
@@ -388,11 +388,13 @@ class _MapElementGestureDetectorState<MapElemementType extends MapElement>
   }
 }
  */
+
+
 typedef MultiPolygonBuilder = Widget Function(
-  BuildContext context,
-  List<List<LatLng>> points,
-  List<List<Offset>> offsets,
-);
+    BuildContext context,
+    List<List<LatLng>> points,
+    List<List<Offset>> offsets,
+    );
 
 class MultiPolygonWidget extends StatefulWidget {
   final Color borderColor, color;
@@ -400,6 +402,8 @@ class MultiPolygonWidget extends StatefulWidget {
   final bool dottedBorder, disableHolesBorder;
   final List<List<LatLng>> points;
   final List<List<Offset>> offsets;
+  final bool showAnimation;
+
   MultiPolygonWidget({
     Key? key,
     required this.points,
@@ -409,24 +413,53 @@ class MultiPolygonWidget extends StatefulWidget {
     this.borderStrokeWidth = 1.0,
     this.dottedBorder = false,
     this.disableHolesBorder = true,
+    this.showAnimation = false,
   }) : super(key: key);
 
   @override
   State<MultiPolygonWidget> createState() => _MultiPolygonWidgetState();
 }
 
-class _MultiPolygonWidgetState extends State<MultiPolygonWidget> {
+class _MultiPolygonWidgetState extends State<MultiPolygonWidget> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _rippleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 800),
+    )..repeat(reverse: true);
+    _rippleAnimation = Tween<double>(begin: 0, end: 1).animate(_animationController);
+  }
+
+
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: MultiPolygonPainter(
-        borderColor: widget.borderColor,
-        color: widget.color,
-        borderStrokeWidth: widget.borderStrokeWidth,
-        dottedBorder: widget.dottedBorder,
-        allpoints: widget.points,
-        alloffsets: widget.offsets,
-      ),
+    return AnimatedBuilder(
+      animation: _rippleAnimation,
+      builder: (context, child) {
+        return CustomPaint(
+          painter: MultiPolygonPainter(
+            borderColor: widget.borderColor,
+            color: widget.color,
+            borderStrokeWidth: widget.borderStrokeWidth,
+            dottedBorder: widget.dottedBorder,
+            allpoints: widget.points,
+            alloffsets: widget.offsets,
+            showAnimation: widget.showAnimation,
+            animationValue: _rippleAnimation.value,
+          ),
+        );
+      },
     );
   }
 }
@@ -437,6 +470,8 @@ class MultiPolygonPainter extends CustomPainter {
   final bool dottedBorder;
   final List<List<LatLng>> allpoints;
   final List<List<Offset>> alloffsets;
+  final bool showAnimation;
+  final double animationValue;
 
   MultiPolygonPainter({
     required this.borderColor,
@@ -445,6 +480,8 @@ class MultiPolygonPainter extends CustomPainter {
     required this.dottedBorder,
     required this.allpoints,
     required this.alloffsets,
+    required this.showAnimation,
+    required this.animationValue,
   });
 
   @override
@@ -452,13 +489,27 @@ class MultiPolygonPainter extends CustomPainter {
     for (var offsets in alloffsets) {
       if (offsets.isNotEmpty) {
         final rect = Offset.zero & size;
-        _paintPolygon(
-          canvas,
-          rect,
-          offsets,
-        );
+        _paintPolygon(canvas, rect, offsets);
+        if (showAnimation) {
+          _paintRippleEffect(canvas, offsets, animationValue);
+
+        }
       }
     }
+  }
+
+  void _paintPolygon(Canvas canvas, Rect rect, List<Offset> offsets) {
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = color;
+
+    canvas.clipRect(rect);
+
+    var path = Path();
+    path.addPolygon(offsets, true);
+    canvas.drawPath(path, paint);
+
+    _paintBorder(canvas, offsets);
   }
 
   void _paintBorder(Canvas canvas, List<Offset> offsets) {
@@ -478,8 +529,7 @@ class MultiPolygonPainter extends CustomPainter {
     }
   }
 
-  void _paintDottedLine(Canvas canvas, List<Offset> offsets, double radius,
-      double stepLength, Paint paint) {
+  void _paintDottedLine(Canvas canvas, List<Offset> offsets, double radius, double stepLength, Paint paint) {
     var startDistance = 0.0;
     for (var i = 0; i < offsets.length - 1; i++) {
       var o0 = offsets[i];
@@ -500,38 +550,40 @@ class MultiPolygonPainter extends CustomPainter {
     canvas.drawCircle(offsets.last, radius, paint);
   }
 
-  void _paintLine(
-      Canvas canvas, List<Offset> offsets, double radius, Paint paint) {
+  void _paintLine(Canvas canvas, List<Offset> offsets, double radius, Paint paint) {
     canvas.drawPoints(PointMode.lines, [...offsets, offsets[0]], paint);
     for (var offset in offsets) {
       canvas.drawCircle(offset, radius, paint);
     }
   }
 
-  void _paintPolygon(
-    Canvas canvas,
-    Rect rect,
-    List<Offset> offsets,
-  ) {
-    final paint = Paint();
 
-    canvas.clipRect(rect);
-    paint
-      ..style = PaintingStyle.fill
-      ..color = color;
+  void _paintRippleEffect(Canvas canvas, List<Offset> offsets, double animationValue) {
+    // Filled ripple effect
+    final fillPaint = Paint()
+      ..color = Colors.amber.withOpacity(0.3 + animationValue * 0.7)
+      ..style = PaintingStyle.fill;
 
     var path = Path();
     path.addPolygon(offsets, true);
-    canvas.drawPath(path, paint);
+    canvas.drawPath(path, fillPaint);
 
-    _paintBorder(
-      canvas,
-      offsets,
-    );
+    // Border ripple effect
+    final borderPaint = Paint()
+      ..color = borderColor.withOpacity(0.3 + animationValue * 0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = borderStrokeWidth * (1 + animationValue * 1.5); // Slightly adjust stroke width
+
+    canvas.drawPath(path, borderPaint);
   }
 
+
+
   @override
-  bool shouldRepaint(MultiPolygonPainter other) => false;
+  bool shouldRepaint(covariant MultiPolygonPainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.showAnimation != showAnimation;
+  }
 
   double _dist(Offset v, Offset w) {
     return sqrt(_dist2(v, w));

@@ -39,9 +39,9 @@ class MultiMarkerLayerOptions extends LayerOptions<MultiMarker> {
     this.rotateAlignment = Alignment.center,
     Stream<Null>? rebuild,
   }) : super(
-          key: key,
-          rebuild: rebuild,
-        );
+    key: key,
+    rebuild: rebuild,
+  );
 }
 
 typedef MultiMarkerCallback = void Function(MultiMarker);
@@ -195,12 +195,12 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
     };
     if (multiMarker != null) {
       final pxPoints = _pxCache.update(multiMarker,
-          (value) => multiMarker.points.map(widget.map.project).toList(),
+              (value) => multiMarker.points.map(widget.map.project).toList(),
           ifAbsent: () => multiMarker.points.map(widget.map.project).toList());
 
       _boundsCache.update(
         multiMarker,
-        (_) {
+            (_) {
           return genBounds(multiMarker, pxPoints);
         },
         ifAbsent: () {
@@ -232,7 +232,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
 
   @override
   Widget build(BuildContext context) {
-     
+
 
     return StreamBuilder<int?>(
       stream: widget.stream, // a Stream<int> or null
@@ -240,10 +240,10 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
         var multiMarkers = <Widget>[];
         final sameZoom = widget.map.zoom == lastZoom;
         for (var marker in widget.markerLayerOptions.multiMarkers) {
-         for (var j = 0; j < marker.points.length; j++) {
+          for (var j = 0; j < marker.points.length; j++) {
             // Decide whether to use cached point or calculate it
             final useCache =
-                marker.equals(_draggingMultiMarker) ? false : sameZoom;
+            marker.equals(_draggingMultiMarker) ? false : sameZoom;
             if (!_pxCache.containsKey(marker) || !useCache) {
               generatePxCache(marker);
             }
@@ -260,17 +260,17 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
 
             final pos = pxPoint - widget.map.getPixelOrigin();
             final markerWidget =
-                (marker.rotate ?? widget.markerLayerOptions.rotate ?? false)
-                    // Counter rotated marker to the map rotation
-                    ? Transform.rotate(
-                        angle: -widget.map.rotationRad,
-                        origin: marker.rotateOrigin ??
-                            widget.markerLayerOptions.rotateOrigin,
-                        alignment: marker.rotateAlignment ??
-                            widget.markerLayerOptions.rotateAlignment,
-                        child: marker.builder(context),
-                      )
-                    : marker.builder(context);
+            (marker.rotate ?? widget.markerLayerOptions.rotate ?? false)
+            // Counter rotated marker to the map rotation
+                ? Transform.rotate(
+              angle: -widget.map.rotationRad,
+              origin: marker.rotateOrigin ??
+                  widget.markerLayerOptions.rotateOrigin,
+              alignment: marker.rotateAlignment ??
+                  widget.markerLayerOptions.rotateAlignment,
+              child: marker.builder(context),
+            )
+                : marker.builder(context);
 
             multiMarkers.add(
               Positioned(
