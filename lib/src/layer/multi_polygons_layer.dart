@@ -42,11 +42,14 @@ class MultiPolygon extends MapElement<MultiPolygonBuilder, MultiPolygon> {
   final List<List<LatLng>> points;
   final List<List<Offset>> offsets = [];
   late final LatLngBounds boundingBox;
+  final double? minZoomVisibility;
+  final double? maxZoomVisibility;
 
   MultiPolygon({
     required String id,
     required MultiPolygonBuilder builder,
     required this.points,
+    this.maxZoomVisibility,this.minZoomVisibility,
     Null Function(MultiPolygon)? onTap,
     Null Function(MultiPolygon)? onDrag,
     int zIndex = 0,

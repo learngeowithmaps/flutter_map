@@ -45,6 +45,8 @@ class MultiPolyline extends MapElement<MultiPolylineBuilder, MultiPolyline> {
   final List<List<Offset>> offsets = [];
   final int tolerance;
   LatLngBounds? boundingBox;
+  final double? minZoomVisibility;
+  final double? maxZoomVisibility;
 
   MultiPolyline({
     this.tolerance = 5000,
@@ -52,6 +54,8 @@ class MultiPolyline extends MapElement<MultiPolylineBuilder, MultiPolyline> {
     required String id,
     required MultiPolylineBuilder builder,
     required this.points,
+    this.maxZoomVisibility,this.minZoomVisibility,
+
     int zIndex = 0,
   }) : super(
     builder: builder,

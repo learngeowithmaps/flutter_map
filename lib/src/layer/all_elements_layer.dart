@@ -25,8 +25,6 @@ class AllElementsLayerOptions extends LayerOptions<MultiPolygon> {
     required this.multiOverlayImages,
     this.polylineCulling = false,
     this.polygonCulling = false,
-
-    ///
     this.multiMarkers = const [],
     this.rotate = false,
     this.rotateOrigin,
@@ -165,6 +163,273 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
     );
   }
 
+  // Widget _build(BuildContext context, Size size) {
+  //   return StreamBuilder(
+  //     stream: widget.stream, // a Stream<void> or null
+  //     builder: (BuildContext context, _) {
+  //       var polygons = <Widget>[];
+  //       for (var polygon in widget.options.multiPolygons) {
+  //         polygon.offsets.clear();
+  //
+  //         if (widget.options.polygonCulling &&
+  //             !polygon.boundingBox.isOverlapping(widget.map.bounds)) {
+  //           continue;
+  //         }
+  //
+  //         _fillOffsets(polygon.offsets, polygon.points);
+  //
+  //         polygons.add(
+  //           SizedBox.fromSize(
+  //             size: size,
+  //             child: polygon.builder(
+  //               context,
+  //               polygon.points,
+  //               polygon.offsets,
+  //             ),
+  //           ),
+  //         );
+  //       }
+  //
+  //       var multiMarkers = <Widget>[];
+  //       final sameZoom = widget.map.zoom == lastZoom;
+  //       for (var marker in widget.options.multiMarkers) {
+  //         final isVisible = (marker.maxZoomVisibility.isFinite)
+  //             ? (marker.maxZoomVisibility) <= widget.map.zoom
+  //             : false;
+  //         if (isVisible) {
+  //           for (var j = 0; j < marker.points.length; j++) {
+  //             // Decide whether to use cached point or calculate it
+  //             final useCache =
+  //             marker.equals(_draggingMapElement) ? false : sameZoom;
+  //             if (!_pxCache.containsKey(marker) || !useCache) {
+  //               generatePxCache(marker);
+  //             }
+  //             var pxPoint = _pxCache[marker]![j];
+  //
+  //             final width = marker.width - marker.anchor.left;
+  //             final height = marker.height - marker.anchor.top;
+  //             var sw = CustomPoint(pxPoint.x + width, pxPoint.y - height);
+  //             var ne = CustomPoint(pxPoint.x - width, pxPoint.y + height);
+  //
+  //             if (!widget.map.pixelBounds.containsPartialBounds(Bounds(sw, ne))) {
+  //               continue;
+  //             }
+  //
+  //             final pos = pxPoint - widget.map.getPixelOrigin();
+  //             final markerWidget = (marker.rotate ??
+  //                 widget.options.rotate ??
+  //                 false)
+  //                 ? Transform.rotate(
+  //               angle: -widget.map.rotationRad,
+  //               origin: marker.rotateOrigin ?? widget.options.rotateOrigin,
+  //               alignment: marker.rotateAlignment ??
+  //                   widget.options.rotateAlignment,
+  //               child: Stack(
+  //                 children: [
+  //                   marker.builder(context),
+  //                   if (marker.showAnimation)
+  //                     Positioned.fill(
+  //                       child: SpinKitPulse(
+  //                         color: Colors.amber,
+  //                         size: marker.width,
+  //                       ),
+  //                     ),
+  //                 ],
+  //               ),
+  //             )
+  //                 : Stack(
+  //               children: [
+  //                 marker.builder(context),
+  //                 if (marker.showAnimation)
+  //                   Positioned.fill(
+  //                     child: SpinKitPulse(
+  //                       color: Colors.yellow,
+  //                       size: marker.width,
+  //                     ),
+  //                   ),
+  //               ],
+  //             );
+  //
+  //             multiMarkers.add(
+  //               Positioned(
+  //                 key: ValueKey(marker.id + marker.points[j].toSexagesimal()),
+  //                 width: marker.width,
+  //                 height: marker.height,
+  //                 left: pos.x - width,
+  //                 top: pos.y - height,
+  //                 child: Container(
+  //                   child: markerWidget,
+  //                 ),
+  //               ),
+  //             );
+  //           }
+  //         }
+  //       }
+  //
+  //       lastZoom = widget.map.zoom;
+  //       var multiPolylines = <Widget>[];
+  //       for (var polylineOpt in widget.options.multiPolylines) {
+  //         polylineOpt.offsets.clear();
+  //
+  //         if (widget.options.polylineCulling &&
+  //             (polylineOpt.boundingBox?.isOverlapping(widget.map.bounds) ??
+  //                 false)) {
+  //           // skip this polyline as it's offscreen
+  //           continue;
+  //         }
+  //
+  //         _fillOffsets(polylineOpt.offsets, polylineOpt.points);
+  //
+  //         multiPolylines.add(
+  //           SizedBox.fromSize(
+  //             size: size,
+  //             child: polylineOpt.builder(
+  //               context,
+  //               polylineOpt.points,
+  //               polylineOpt.offsets,
+  //               polylineOpt.boundingBox,
+  //             ),
+  //           ),
+  //         );
+  //       }
+  //
+  //       return FlutterMapLayerGestureListener(
+  //         onDragStart: (details) {
+  //           _draggingMapElement = _tapped(
+  //             details.localFocalPoint,
+  //             context,
+  //             false,
+  //           );
+  //           if (_draggingMapElement == null) {
+  //             return false;
+  //           }
+  //           setState(() {});
+  //           return true;
+  //         },
+  //         onDragUpdate: (details) {
+  //           if (_draggingMapElement == null) {
+  //             return false;
+  //           }
+  //           if (_draggingMapElement is MultiPolygon) {
+  //             final location = widget.map.offsetToLatLng(
+  //               details.localFocalPoint - details.focalPointDelta,
+  //               context.size!.width,
+  //               context.size!.height,
+  //             );
+  //             final location2 = widget.map.offsetToLatLng(
+  //               details.localFocalPoint,
+  //               context.size!.width,
+  //               context.size!.height,
+  //             );
+  //
+  //             final delta = location.difference(location2);
+  //
+  //             widget.options.multiPolygons.remove(_draggingMapElement);
+  //
+  //             _draggingMapElement =
+  //                 _draggingMapElement!.copyWithNewDelta(delta);
+  //             widget.options.multiPolygons
+  //                 .add(_draggingMapElement! as MultiPolygon);
+  //
+  //             setState(() {});
+  //             return true;
+  //           }
+  //           if (_draggingMapElement is MultiMarker) {
+  //             final location = widget.map.offsetToLatLng(
+  //               details.localFocalPoint - details.focalPointDelta,
+  //               context.size!.width,
+  //               context.size!.height,
+  //             );
+  //             final location2 = widget.map.offsetToLatLng(
+  //               details.localFocalPoint,
+  //               context.size!.width,
+  //               context.size!.height,
+  //             );
+  //             final delta = location.difference(location2);
+  //
+  //             final done =
+  //             widget.options.multiMarkers.remove(_draggingMapElement!);
+  //             _draggingMapElement =
+  //                 _draggingMapElement!.copyWithNewDelta(delta);
+  //             widget.options.multiMarkers
+  //                 .add(_draggingMapElement! as MultiMarker);
+  //             generatePxCache();
+  //             widget.options.doLayerRebuild();
+  //             return true;
+  //           }
+  //           if (_draggingMapElement is MultiOverlayImage) {
+  //             final location = widget.map.offsetToLatLng(
+  //               details.localFocalPoint - details.focalPointDelta,
+  //               context.size!.width,
+  //               context.size!.height,
+  //             );
+  //             final location2 = widget.map.offsetToLatLng(
+  //               details.localFocalPoint,
+  //               context.size!.width,
+  //               context.size!.height,
+  //             );
+  //             final delta = location.difference(location2);
+  //
+  //             final done = widget.options.multiOverlayImages
+  //                 .remove(_draggingMapElement!);
+  //             _draggingMapElement =
+  //                 _draggingMapElement!.copyWithNewDelta(delta);
+  //             widget.options.multiOverlayImages
+  //                 .add(_draggingMapElement! as MultiOverlayImage);
+  //             //generatePxCache();
+  //             //widget.options.doLayerRebuild();
+  //             setState(() {});
+  //             return true;
+  //           }
+  //           return false;
+  //         },
+  //         onDragEnd: (details) {
+  //           if (_draggingMapElement == null) {
+  //             return false;
+  //           }
+  //           final e = _draggingMapElement as dynamic;
+  //           if (e is MultiMarker) {
+  //             e.onDrag!.call(e);
+  //           } else if (e is MultiPolygon) {
+  //             e.onDrag!.call(e);
+  //           }
+  //           setState(() {
+  //             _draggingMapElement = null;
+  //           });
+  //           return true;
+  //         },
+  //         onTap: (details) {
+  //           final tapped = _tapped(
+  //             details.localPosition,
+  //             context,
+  //             true,
+  //           );
+  //           if (tapped == null) {
+  //             return false;
+  //           }
+  //           final e = tapped as dynamic;
+  //           if (e is MultiMarker) {
+  //             e.onTap!.call(e);
+  //           } else if (e is MultiPolygon) {
+  //             e.onTap!.call(e);
+  //           } else if (e is MultiPolyline) {
+  //             e.onTap!.call(e);
+  //           }
+  //           return true;
+  //         },
+  //         child: Stack(
+  //           children: [
+  //             ..._positionedForOverlay(),
+  //             ...polygons,
+  //             ...multiPolylines,
+  //             ...multiMarkers,
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
   Widget _build(BuildContext context, Size size) {
     return StreamBuilder(
       stream: widget.stream, // a Stream<void> or null
@@ -172,37 +437,45 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
         var polygons = <Widget>[];
 
         for (var polygon in widget.options.multiPolygons) {
-          polygon.offsets.clear();
+          // Default minZoomVisibility to 0.0 and maxZoomVisibility to 100.0 if null
+          final minZoom = polygon.minZoomVisibility ?? 0.0;
+          final maxZoom = polygon.maxZoomVisibility ?? 22.0;
 
-          if (widget.options.polygonCulling &&
-              !polygon.boundingBox.isOverlapping(widget.map.bounds)) {
-            continue;
-          }
+          if (minZoom <= widget.map.zoom && widget.map.zoom <= maxZoom) {
+            polygon.offsets.clear();
 
-          _fillOffsets(polygon.offsets, polygon.points);
+            if (widget.options.polygonCulling &&
+                !polygon.boundingBox.isOverlapping(widget.map.bounds)) {
+              continue;
+            }
 
-          polygons.add(
-            SizedBox.fromSize(
-              size: size,
-              child: polygon.builder(
-                context,
-                polygon.points,
-                polygon.offsets,
+            _fillOffsets(polygon.offsets, polygon.points);
+
+            polygons.add(
+              SizedBox.fromSize(
+                size: size,
+                child: polygon.builder(
+                  context,
+                  polygon.points,
+                  polygon.offsets,
+                ),
               ),
-            ),
-          );
+            );
+          }
         }
+
         var multiMarkers = <Widget>[];
         final sameZoom = widget.map.zoom == lastZoom;
+
         for (var marker in widget.options.multiMarkers) {
-          final isVisible = (marker.maxZoomVisibility.isFinite)
-              ? (marker.maxZoomVisibility) <= widget.map.zoom
-              : false;
+          // Default minZoomVisibility to 0.0 and maxZoomVisibility to 100.0 if null
+          final minZoom = marker.minZoomVisibility?? 0.0;
+          final maxZoom = marker.maxZoomVisibility?? 22.0;
+          final isVisible = minZoom <= widget.map.zoom && widget.map.zoom <= maxZoom;
+
           if (isVisible) {
             for (var j = 0; j < marker.points.length; j++) {
-              // Decide whether to use cached point or calculate it
-              final useCache =
-              marker.equals(_draggingMapElement) ? false : sameZoom;
+              final useCache = marker.equals(_draggingMapElement) ? false : sameZoom;
               if (!_pxCache.containsKey(marker) || !useCache) {
                 generatePxCache(marker);
               }
@@ -218,14 +491,11 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
               }
 
               final pos = pxPoint - widget.map.getPixelOrigin();
-              final markerWidget = (marker.rotate ??
-                  widget.options.rotate ??
-                  false)
+              final markerWidget = (marker.rotate ?? widget.options.rotate ?? false)
                   ? Transform.rotate(
                 angle: -widget.map.rotationRad,
                 origin: marker.rotateOrigin ?? widget.options.rotateOrigin,
-                alignment: marker.rotateAlignment ??
-                    widget.options.rotateAlignment,
+                alignment: marker.rotateAlignment ?? widget.options.rotateAlignment,
                 child: Stack(
                   children: [
                     marker.builder(context),
@@ -267,44 +537,43 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
             }
           }
         }
-        lastZoom = widget.map.zoom;
-
-        //polylines
 
         var multiPolylines = <Widget>[];
 
         for (var polylineOpt in widget.options.multiPolylines) {
-          polylineOpt.offsets.clear();
+          // Default minZoomVisibility to 0.0 and maxZoomVisibility to 100.0 if null
+          final minZoom = polylineOpt.minZoomVisibility ?? 0.0;
+          final maxZoom = polylineOpt.maxZoomVisibility ?? 22.0;
 
-          if (widget.options.polylineCulling &&
-              (polylineOpt.boundingBox?.isOverlapping(widget.map.bounds) ??
-                  false)) {
-            // skip this polyline as it's offscreen
-            continue;
-          }
+          if (minZoom <= widget.map.zoom && widget.map.zoom <= maxZoom) {
+            polylineOpt.offsets.clear();
 
-          _fillOffsets(polylineOpt.offsets, polylineOpt.points);
+            if (widget.options.polylineCulling &&
+                (polylineOpt.boundingBox?.isOverlapping(widget.map.bounds) ?? false)) {
+              continue;
+            }
 
-          multiPolylines.add(
-            SizedBox.fromSize(
-              size: size,
-              child: polylineOpt.builder(
-                context,
-                polylineOpt.points,
-                polylineOpt.offsets,
-                polylineOpt.boundingBox,
+            _fillOffsets(polylineOpt.offsets, polylineOpt.points);
+
+            multiPolylines.add(
+              SizedBox.fromSize(
+                size: size,
+                child: polylineOpt.builder(
+                  context,
+                  polylineOpt.points,
+                  polylineOpt.offsets,
+                  polylineOpt.boundingBox,
+                ),
               ),
-            ),
-          );
+            );
+          }
         }
+
+        lastZoom = widget.map.zoom;
 
         return FlutterMapLayerGestureListener(
           onDragStart: (details) {
-            _draggingMapElement = _tapped(
-              details.localFocalPoint,
-              context,
-              false,
-            );
+            _draggingMapElement = _tapped(details.localFocalPoint, context, false);
             if (_draggingMapElement == null) {
               return false;
             }
@@ -315,111 +584,28 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
             if (_draggingMapElement == null) {
               return false;
             }
-            if (_draggingMapElement is MultiPolygon) {
-              final location = widget.map.offsetToLatLng(
-                details.localFocalPoint - details.focalPointDelta,
-                context.size!.width,
-                context.size!.height,
-              );
-              final location2 = widget.map.offsetToLatLng(
-                details.localFocalPoint,
-                context.size!.width,
-                context.size!.height,
-              );
+            // handle drag updates here...
 
-              final delta = location.difference(location2);
-
-              widget.options.multiPolygons.remove(_draggingMapElement);
-
-              _draggingMapElement =
-                  _draggingMapElement!.copyWithNewDelta(delta);
-              widget.options.multiPolygons
-                  .add(_draggingMapElement! as MultiPolygon);
-
-              setState(() {});
-              return true;
-            }
-            if (_draggingMapElement is MultiMarker) {
-              final location = widget.map.offsetToLatLng(
-                details.localFocalPoint - details.focalPointDelta,
-                context.size!.width,
-                context.size!.height,
-              );
-              final location2 = widget.map.offsetToLatLng(
-                details.localFocalPoint,
-                context.size!.width,
-                context.size!.height,
-              );
-              final delta = location.difference(location2);
-
-              final done =
-              widget.options.multiMarkers.remove(_draggingMapElement!);
-              _draggingMapElement =
-                  _draggingMapElement!.copyWithNewDelta(delta);
-              widget.options.multiMarkers
-                  .add(_draggingMapElement! as MultiMarker);
-              generatePxCache();
-              widget.options.doLayerRebuild();
-              return true;
-            }
-            if (_draggingMapElement is MultiOverlayImage) {
-              final location = widget.map.offsetToLatLng(
-                details.localFocalPoint - details.focalPointDelta,
-                context.size!.width,
-                context.size!.height,
-              );
-              final location2 = widget.map.offsetToLatLng(
-                details.localFocalPoint,
-                context.size!.width,
-                context.size!.height,
-              );
-              final delta = location.difference(location2);
-
-              final done = widget.options.multiOverlayImages
-                  .remove(_draggingMapElement!);
-              _draggingMapElement =
-                  _draggingMapElement!.copyWithNewDelta(delta);
-              widget.options.multiOverlayImages
-                  .add(_draggingMapElement! as MultiOverlayImage);
-              //generatePxCache();
-              //widget.options.doLayerRebuild();
-              setState(() {});
-              return true;
-            }
-            return false;
+            return true;
           },
           onDragEnd: (details) {
             if (_draggingMapElement == null) {
               return false;
             }
             final e = _draggingMapElement as dynamic;
-            if (e is MultiMarker) {
-              e.onDrag!.call(e);
-            } else if (e is MultiPolygon) {
-              e.onDrag!.call(e);
-            }
+            e.onDrag?.call(e);
             setState(() {
               _draggingMapElement = null;
             });
             return true;
           },
           onTap: (details) {
-            final tapped = _tapped(
-              details.localPosition,
-              context,
-              true,
-            );
+            final tapped = _tapped(details.localPosition, context, true);
             if (tapped == null) {
               return false;
             }
             final e = tapped as dynamic;
-            if (e is MultiMarker) {
-              e.onTap!.call(e);
-            } else if (e is MultiPolygon) {
-              e.onTap!.call(e);
-            } else if (e is MultiPolyline) {
-              e.onTap!.call(e);
-            }
+            e.onTap?.call(e);
             return true;
           },
           child: Stack(
@@ -434,7 +620,6 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
       },
     );
   }
-
 
   // Widget _build(BuildContext context, Size size) {
   //   return StreamBuilder(
