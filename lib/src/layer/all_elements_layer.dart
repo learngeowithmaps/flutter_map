@@ -580,14 +580,83 @@ class _AllElementsLayerState extends State<AllElementsLayer> {
             setState(() {});
             return true;
           },
-          onDragUpdate: (details) {
-            if (_draggingMapElement == null) {
-              return false;
-            }
-            // handle drag updates here...
+                  onDragUpdate: (details) {
+                    if (_draggingMapElement == null) {
+                      return false;
+                    }
+                    if (_draggingMapElement is MultiPolygon) {
+                      final location = widget.map.offsetToLatLng(
+                        details.localFocalPoint - details.focalPointDelta,
+                        context.size!.width,
+                        context.size!.height,
+                      );
+                      final location2 = widget.map.offsetToLatLng(
+                        details.localFocalPoint,
+                        context.size!.width,
+                        context.size!.height,
+                      );
 
-            return true;
-          },
+                      final delta = location.difference(location2);
+
+                      widget.options.multiPolygons.remove(_draggingMapElement);
+
+                      _draggingMapElement =
+                          _draggingMapElement!.copyWithNewDelta(delta);
+                      widget.options.multiPolygons
+                          .add(_draggingMapElement! as MultiPolygon);
+
+                      setState(() {});
+                      return true;
+                    }
+                    if (_draggingMapElement is MultiMarker) {
+                      final location = widget.map.offsetToLatLng(
+                        details.localFocalPoint - details.focalPointDelta,
+                        context.size!.width,
+                        context.size!.height,
+                      );
+                      final location2 = widget.map.offsetToLatLng(
+                        details.localFocalPoint,
+                        context.size!.width,
+                        context.size!.height,
+                      );
+                      final delta = location.difference(location2);
+
+                      final done =
+                      widget.options.multiMarkers.remove(_draggingMapElement!);
+                      _draggingMapElement =
+                          _draggingMapElement!.copyWithNewDelta(delta);
+                      widget.options.multiMarkers
+                          .add(_draggingMapElement! as MultiMarker);
+                      generatePxCache();
+                      widget.options.doLayerRebuild();
+                      return true;
+                    }
+                    if (_draggingMapElement is MultiOverlayImage) {
+                      final location = widget.map.offsetToLatLng(
+                        details.localFocalPoint - details.focalPointDelta,
+                        context.size!.width,
+                        context.size!.height,
+                      );
+                      final location2 = widget.map.offsetToLatLng(
+                        details.localFocalPoint,
+                        context.size!.width,
+                        context.size!.height,
+                      );
+                      final delta = location.difference(location2);
+
+                      final done = widget.options.multiOverlayImages
+                          .remove(_draggingMapElement!);
+                      _draggingMapElement =
+                          _draggingMapElement!.copyWithNewDelta(delta);
+                      widget.options.multiOverlayImages
+                          .add(_draggingMapElement! as MultiOverlayImage);
+                      //generatePxCache();
+                      //widget.options.doLayerRebuild();
+                      setState(() {});
+                      return true;
+                    }
+                    return false;
+                  },
           onDragEnd: (details) {
             if (_draggingMapElement == null) {
               return false;
