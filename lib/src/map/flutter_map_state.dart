@@ -48,8 +48,6 @@ class FlutterMapState extends MapGestureMixin {
     }
   }
 
-
-
   void _disposeStreamGroups() {
     for (var group in groups) {
       group.close();
