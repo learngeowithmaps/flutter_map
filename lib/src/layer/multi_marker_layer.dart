@@ -131,6 +131,7 @@ class MultiMarker extends MapElement<WidgetBuilder, MultiMarker> {
   }
 }
 
+
 class MultiMarkerLayerWidget extends StatelessWidget {
   final MultiMarkerLayerOptions options;
 
@@ -163,17 +164,11 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
   MultiMarker? _draggingMultiMarker;
   var lastZoom = -1.0;
 
-  /// List containing cached pixel positions of multiMarkers
-  /// Should be discarded when zoom changes
-  // Has a fixed length of markerOpts.multiMarkers.length - better performance:
-  // https://stackoverflow.com/questions/15943890/is-there-a-performance-benefit-in-using-fixed-length-lists-in-dart
   Map<MultiMarker, List<CustomPoint>> _pxCache = {};
   Map<MultiMarker, List<List<LatLng>>> _boundsCache = {};
 
-  // Calling this every time markerOpts change should guarantee proper length
   void generatePxCache([MultiMarker? multiMarker]) {
-    final genBounds =
-        (MultiMarker multiMarker, List<CustomPoint<num>> pxPoints) {
+    final genBounds = (MultiMarker multiMarker, List<CustomPoint<num>> pxPoints) {
       final width = multiMarker.width - multiMarker.anchor.left;
       final height = multiMarker.height - multiMarker.anchor.top;
       return pxPoints.map((pxPoint) {
@@ -196,6 +191,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
         ];
       }).toList();
     };
+
     if (multiMarker != null) {
       final pxPoints = _pxCache.update(multiMarker,
               (value) => multiMarker.points.map(widget.map.project).toList(),
@@ -222,8 +218,6 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
   void initState() {
     super.initState();
     generatePxCache();
-
-    //print(_draggingMultiMarker?.id);
   }
 
   @override
@@ -235,16 +229,15 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
 
   @override
   Widget build(BuildContext context) {
-
-
     return StreamBuilder<int?>(
-      stream: widget.stream, // a Stream<int> or null
+      stream: widget.stream,
       builder: (BuildContext context, AsyncSnapshot<int?> snapshot) {
         var multiMarkers = <Widget>[];
         final sameZoom = widget.map.zoom == lastZoom;
+
+        // Generate markers based on zoom level and state
         for (var marker in widget.markerLayerOptions.multiMarkers) {
           for (var j = 0; j < marker.points.length; j++) {
-            // Decide whether to use cached point or calculate it
             final useCache =
             marker.equals(_draggingMultiMarker) ? false : sameZoom;
             if (!_pxCache.containsKey(marker) || !useCache) {
@@ -262,18 +255,25 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
             }
 
             final pos = pxPoint - widget.map.getPixelOrigin();
-            final markerWidget =
-            (marker.rotate ?? widget.markerLayerOptions.rotate ?? false)
-            // Counter rotated marker to the map rotation
+            final markerWidget = (marker.rotate ?? widget.markerLayerOptions.rotate ?? false)
                 ? Transform.rotate(
               angle: -widget.map.rotationRad,
-              origin: marker.rotateOrigin ??
-                  widget.markerLayerOptions.rotateOrigin,
-              alignment: marker.rotateAlignment ??
-                  widget.markerLayerOptions.rotateAlignment,
+              origin: marker.rotateOrigin ?? widget.markerLayerOptions.rotateOrigin,
+              alignment: marker.rotateAlignment ?? widget.markerLayerOptions.rotateAlignment,
               child: marker.builder(context),
             )
                 : marker.builder(context);
+
+            // Apply continuous scaling animation if showAnimation is true
+            final scale = 1.0 + (widget.map.zoom - 10) * 0.1;
+            final markerWithAnimation = marker.showAnimation
+                ? AnimatedScale(
+              scale: scale, // Dynamically scale based on zoom level
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeInOut,  // Continuous easing animation
+              child: markerWidget,  // Apply animation to the marker widget
+            )
+                : markerWidget;  // No animation, just the marker widget
 
             multiMarkers.add(
               Positioned(
@@ -283,21 +283,18 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
                 left: pos.x - width,
                 top: pos.y - height,
                 child: Container(
-                  child: markerWidget,
+                  child: markerWithAnimation, // Use marker with or without animation
                 ),
               ),
             );
           }
         }
+
         lastZoom = widget.map.zoom;
+
         return FlutterMapLayerGestureListener(
           onDragStart: (details) {
-            _draggingMultiMarker = _tapped(
-              details.localFocalPoint,
-              context,
-              false,
-            );
-
+            _draggingMultiMarker = _tapped(details.localFocalPoint, context, false);
             if (_draggingMultiMarker == null) {
               return false;
             } else {
@@ -309,23 +306,11 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
             if (_draggingMultiMarker == null) {
               return false;
             }
-            final location = widget.map.offsetToLatLng(
-              details.localFocalPoint - details.focalPointDelta,
-              context.size!.width,
-              context.size!.height,
-            );
-            final location2 = widget.map.offsetToLatLng(
-              details.localFocalPoint,
-              context.size!.width,
-              context.size!.height,
-            );
+            final location = widget.map.offsetToLatLng(details.localFocalPoint - details.focalPointDelta, context.size!.width, context.size!.height);
+            final location2 = widget.map.offsetToLatLng(details.localFocalPoint, context.size!.width, context.size!.height);
             final delta = location.difference(location2);
-
-            // final done = widget.markerLayerOptions.multiMarkers.remove(_draggingMultiMarker!);
-            _draggingMultiMarker =
-                _draggingMultiMarker!.copyWithNewDelta(delta);
+            _draggingMultiMarker = _draggingMultiMarker!.copyWithNewDelta(delta);
             widget.markerLayerOptions.multiMarkers.add(_draggingMultiMarker!);
-
             generatePxCache();
             widget.markerLayerOptions.doLayerRebuild();
             return true;
@@ -342,11 +327,7 @@ class _MultiMarkerLayerState extends State<MultiMarkerLayer> {
             }
           },
           onTap: (details) {
-            final tapped = _tapped(
-              details.localPosition,
-              context,
-              true,
-            );
+            final tapped = _tapped(details.localPosition, context, true);
             if (tapped == null) {
               return false;
             } else {
